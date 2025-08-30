@@ -22,6 +22,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
+  loginWithToken: (token: string, user: User) => void;
   register: (email: string, username: string, password: string) => Promise<void>;
   logout: () => void;
   loading: boolean;
@@ -78,6 +79,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const loginWithToken = (token: string, user: User) => {
+    localStorage.setItem('token', token);
+    authApi.setToken(token);
+    setUser(user);
+  };
+
   const register = async (email: string, username: string, password: string) => {
     try {
       const response = await authApi.register(email, username, password);
@@ -100,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     login,
+    loginWithToken,
     register,
     logout,
     loading,

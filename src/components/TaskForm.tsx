@@ -10,15 +10,16 @@ interface Task {
 
 interface TaskFormProps {
   task?: Task | null;
-  onSubmit: (taskData: { title: string; description?: string; category?: string }) => Promise<void>;
+  onSubmit: (taskData: { title: string; description?: string; category?: string; priority?: string }) => Promise<void>;
   onCancel: () => void;
-  categories: string[];
+  categories: { name: string; color: string; textColor: string }[];
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, categories }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [priority, setPriority] = useState('Medium');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, categorie
       setTitle(task.title);
       setDescription(task.description || '');
       setCategory(task.category || '');
+      setPriority(task.priority || 'Medium');
     }
   }, [task]);
 
@@ -38,7 +40,8 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, categorie
       await onSubmit({
         title: title.trim(),
         description: description.trim() || undefined,
-        category: category || undefined
+        category: category || undefined,
+        priority: priority
       });
     } catch (error) {
       console.error('Failed to save task:', error);
@@ -101,8 +104,23 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel, categorie
             >
               <option value="">Select category</option>
               {categories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
+                <option key={cat.name} value={cat.name}>{cat.name}</option>
               ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-pixel text-xs text-gameboy-lightest mb-2">
+              Priority
+            </label>
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full bg-gameboy-dark border-2 border-gameboy-border rounded p-2 text-gameboy-lightest font-pixel text-xs focus:border-gameboy-light focus:outline-none"
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
             </select>
           </div>
 

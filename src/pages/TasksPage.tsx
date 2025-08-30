@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAchievement } from '../contexts/AchievementContext';
 import { tasksApi } from '../services/api';
-import { Plus, X, Edit3 } from 'lucide-react';
+import { Plus, X, Edit3, Sparkles } from 'lucide-react';
 import TaskForm from '../components/TaskForm';
+import TaskTemplates from '../components/TaskTemplates';
 
 interface Task {
   taskId: number;
@@ -15,9 +17,11 @@ interface Task {
 
 const TasksPage: React.FC = () => {
   const { refreshUser } = useAuth();
+  const { showAchievement } = useAchievement();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showTemplates, setShowTemplates] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
@@ -35,7 +39,7 @@ const TasksPage: React.FC = () => {
     }
   };
 
-  const handleTaskSubmit = async (taskData: { title: string; description?: string; category?: string }) => {
+  const handleTaskSubmit = async (taskData: { title: string; description?: string; category?: string; priority?: string }) => {
     try {
       if (editingTask) {
         await tasksApi.updateTask(editingTask.taskId, taskData);
@@ -51,11 +55,42 @@ const TasksPage: React.FC = () => {
     }
   };
 
+  const handleTemplateSelect = async (template: { title: string; description: string; category: string; priority: string }) => {
+    try {
+      await tasksApi.createTask(template);
+      await loadTasks();
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to create task from template:', error);
+    }
+  };
+
   const toggleTask = async (taskId: number, isDone: boolean) => {
     try {
       await tasksApi.updateTask(taskId, { isDone: !isDone });
       await loadTasks();
-      await refreshUser();
+      const updatedUser = await refreshUser();
+      
+      // Show achievement notifications based on user progress
+      if (updatedUser?.gamification) {
+        const { level, points, badges, streakCount } = updatedUser.gamification;
+        
+        // Check for new badges
+        if (badges.length > 0) {
+          const latestBadge = badges[badges.length - 1];
+          showAchievement(`Unlocked: ${latestBadge}`, 'badge');
+        }
+        
+        // Check for level up
+        if (level > 1) {
+          showAchievement(`Level Up! You're now level ${level}`, 'level');
+        }
+        
+        // Check for streak milestones
+        if (streakCount >= 7) {
+          showAchievement(`🔥 ${streakCount} Day Streak!`, 'streak');
+        }
+      }
     } catch (error) {
       console.error('Failed to toggle task:', error);
     }
@@ -77,7 +112,14 @@ const TasksPage: React.FC = () => {
     setShowForm(true);
   };
 
-  const categories = ['Training', 'Health', 'Learning', 'Chores', 'Work', 'Personal'];
+  const categories = [
+    { name: 'Training', color: 'bg-red-500', textColor: 'text-red-100' },
+    { name: 'Health', color: 'bg-green-500', textColor: 'text-green-100' },
+    { name: 'Learning', color: 'bg-blue-500', textColor: 'text-blue-100' },
+    { name: 'Chores', color: 'bg-yellow-500', textColor: 'text-yellow-100' },
+    { name: 'Work', color: 'bg-purple-500', textColor: 'text-purple-100' },
+    { name: 'Personal', color: 'bg-pink-500', textColor: 'text-pink-100' }
+  ];
   const completedTasks = tasks.filter(task => task.isDone).length;
 
   if (loading) {
@@ -110,13 +152,22 @@ const TasksPage: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setShowForm(true)}
-          className="w-full bg-gameboy-light text-gameboy-dark font-pixel text-xs py-3 px-4 border-2 border-gameboy-lightest rounded flex items-center justify-center space-x-2 hover:bg-gameboy-lightest transition-colors duration-200"
-        >
-          <Plus size={12} />
-          <span>NEW TASK</span>
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex-1 bg-gameboy-light text-gameboy-dark font-pixel text-xs py-3 px-4 border-2 border-gameboy-lightest rounded flex items-center justify-center space-x-2 hover:bg-gameboy-lightest transition-colors duration-200"
+          >
+            <Plus size={12} />
+            <span>NEW TASK</span>
+          </button>
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="bg-gameboy-medium text-gameboy-lightest font-pixel text-xs py-3 px-4 border-2 border-gameboy-border rounded flex items-center justify-center space-x-2 hover:bg-gameboy-light transition-colors duration-200"
+          >
+            <Sparkles size={12} />
+            <span>TEMPLATES</span>
+          </button>
+        </div>
       </div>
 
       {/* Task Form Modal */}
@@ -129,6 +180,14 @@ const TasksPage: React.FC = () => {
             setEditingTask(null);
           }}
           categories={categories}
+        />
+      )}
+
+      {/* Task Templates Modal */}
+      {showTemplates && (
+        <TaskTemplates
+          onSelectTemplate={handleTemplateSelect}
+          onClose={() => setShowTemplates(false)}
         />
       )}
 
@@ -179,6 +238,24 @@ const TaskCard: React.FC<{
     }
   };
 
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'High': return 'text-red-400';
+      case 'Medium': return 'text-yellow-400';
+      case 'Low': return 'text-green-400';
+      default: return 'text-gameboy-light';
+    }
+  };
+
+  const getPriorityIcon = (priority?: string) => {
+    switch (priority) {
+      case 'High': return '🔴';
+      case 'Medium': return '🟡';
+      case 'Low': return '🟢';
+      default: return '⚪';
+    }
+  };
+
   return (
     <div className={`bg-gameboy-dark border-2 rounded-lg p-4 transition-all duration-200 ${
       task.isDone ? 'border-gameboy-light opacity-75' : 'border-gameboy-border hover:border-gameboy-light'
@@ -208,6 +285,11 @@ const TaskCard: React.FC<{
             }`}>
               {task.title}
             </h3>
+            {task.priority && (
+              <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                {getPriorityIcon(task.priority)}
+              </span>
+            )}
           </div>
           
           {task.description && (

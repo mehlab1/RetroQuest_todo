@@ -1,7 +1,7 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authenticateToken } from '../middleware/auth.js';
-import { updateUserPoints } from '../services/gamification.js';
+import { updateUserPoints, checkDailyCompletion } from '../services/gamification.js';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -77,6 +77,8 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (isDone !== existingTask.isDone) {
       if (isDone) {
         await updateUserPoints(req.user.userId, 10, 'task_completion');
+        // Check if all daily tasks are completed for streak
+        await checkDailyCompletion(req.user.userId);
       } else {
         await updateUserPoints(req.user.userId, -10, 'task_incompletion');
       }

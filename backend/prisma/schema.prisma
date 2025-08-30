@@ -15,7 +15,7 @@ model User {
   email         String           @unique
   username      String?
   password      String?
-  googleId      String?          @map("google_id")
+  googleId      String?          @unique @map("google_id")
   points        Int              @default(0)
   level         Int              @default(1)
   pokemonPetId  Int?             @map("pokemon_pet_id")
@@ -51,6 +51,7 @@ model Task {
   title       String
   description String?
   category    String?
+  priority    String?       @default("Medium")
   isDone      Boolean       @default(false) @map("is_done")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")

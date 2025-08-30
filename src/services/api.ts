@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -26,6 +26,11 @@ export const authApi = {
     api.post('/auth/register', { email, username, password }),
 
   getCurrentUser: () => api.get('/auth/me'),
+
+  // Google OAuth
+  googleLogin: () => {
+    window.location.href = `${API_BASE_URL}/auth/google`;
+  },
 };
 
 // Tasks API

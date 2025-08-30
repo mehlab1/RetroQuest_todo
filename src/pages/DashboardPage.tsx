@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useAchievement } from '../contexts/AchievementContext';
 import { tasksApi, questsApi } from '../services/api';
 import { Zap, Target, Trophy, Heart } from 'lucide-react';
 
@@ -17,6 +18,7 @@ interface Quest {
 
 const DashboardPage: React.FC = () => {
   const { user, refreshUser } = useAuth();
+  const { showAchievement } = useAchievement();
   const [todayTasks, setTodayTasks] = useState<Task[]>([]);
   const [dailyQuests, setDailyQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +47,28 @@ const DashboardPage: React.FC = () => {
     try {
       await tasksApi.updateTask(taskId, { isDone: !isDone });
       await loadDashboardData();
-      await refreshUser();
+      const updatedUser = await refreshUser();
+      
+      // Show achievement notifications
+      if (updatedUser?.gamification) {
+        const { level, points, badges, streakCount } = updatedUser.gamification;
+        
+        // Check for new badges
+        if (badges.length > 0) {
+          const latestBadge = badges[badges.length - 1];
+          showAchievement(`Unlocked: ${latestBadge}`, 'badge');
+        }
+        
+        // Check for level up
+        if (level > 1) {
+          showAchievement(`Level Up! You're now level ${level}`, 'level');
+        }
+        
+        // Check for streak milestones
+        if (streakCount >= 7) {
+          showAchievement(`🔥 ${streakCount} Day Streak!`, 'streak');
+        }
+      }
     } catch (error) {
       console.error('Failed to toggle task:', error);
     }
