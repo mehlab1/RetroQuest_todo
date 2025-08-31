@@ -51,46 +51,7 @@ async function main() {
   // Get created pets for user assignment
   const createdPets = await prisma.pokemonPet.findMany();
 
-  // Create demo users
-  const hashedPassword = await bcrypt.hash('password123', 12);
-
-  const ashUser = await prisma.user.create({
-    data: {
-      email: 'ash@pokemon.com',
-      username: 'Ash',
-      password: hashedPassword,
-      points: 150,
-      level: 2,
-      pokemonPetId: createdPets[0].petId, // Charmander
-      gamification: {
-        create: {
-          points: 150,
-          level: 2,
-          streakCount: 3,
-          badges: ['Rookie Trainer']
-        }
-      }
-    }
-  });
-
-  const mistyUser = await prisma.user.create({
-    data: {
-      email: 'misty@pokemon.com',
-      username: 'Misty',
-      password: hashedPassword,
-      points: 250,
-      level: 3,
-      pokemonPetId: createdPets[2].petId, // Squirtle
-      gamification: {
-        create: {
-          points: 250,
-          level: 3,
-          streakCount: 5,
-          badges: ['Rookie Trainer', 'Water Expert']
-        }
-      }
-    }
-  });
+  // Demo users removed for security - only Google OAuth registration allowed
 
   // Create sample tasks
   const tasks = [
@@ -125,19 +86,10 @@ async function main() {
   const weekAgo = new Date();
   weekAgo.setDate(weekAgo.getDate() - 7);
 
-  await prisma.taskHistory.createMany({
-    data: [
-      { userId: ashUser.userId, taskId: 1, date: yesterday, isDone: true, completedAt: yesterday },
-      { userId: ashUser.userId, taskId: 2, date: yesterday, isDone: false },
-      { userId: mistyUser.userId, taskId: 4, date: yesterday, isDone: true, completedAt: yesterday },
-      { userId: mistyUser.userId, taskId: 5, date: weekAgo, isDone: true, completedAt: weekAgo }
-    ]
-  });
+  // Task history removed - will be created by actual users
 
   console.log('✅ Database seeded successfully!');
-  console.log('👤 Demo users created:');
-  console.log('   - ash@pokemon.com (password: password123)');
-  console.log('   - misty@pokemon.com (password: password123)');
+  console.log('🔐 Security: Demo accounts removed - Google OAuth only');
 }
 
 main()

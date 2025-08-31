@@ -1,3 +1,1570 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import 'nes.css/css/nes.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --gameboy-dark: #0f380f;
+  --gameboy-medium: #306230;
+  --gameboy-light: #8bac0f;
+  --gameboy-lightest: #9bbc0f;
+  --gameboy-border: #306230;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Press Start 2P', monospace;
+  background: var(--gameboy-dark);
+  color: var(--gameboy-lightest);
+  line-height: 1.6;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-pixel {
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* Mobile-first responsive design */
+.container-mobile {
+  width: 100%;
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 0 12px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 375px) {
+  .container-mobile {
+    padding: 0 16px;
+  }
+}
+
+@media (min-width: 414px) {
+  .container-mobile {
+    padding: 0 20px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-mobile {
+    max-width: 768px;
+    padding: 0 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-mobile {
+    max-width: 1024px;
+    padding: 0 32px;
+  }
+}
+
+/* NES.css Integration with mobile-first approach */
+.nes-container {
+  background: var(--gameboy-medium);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  border-width: 3px;
+  border-radius: 8px;
+}
+
+.nes-container.is-rounded {
+  border-radius: 12px;
+}
+
+.nes-container.with-title > .title {
+  background: var(--gameboy-dark);
+  color: var(--gameboy-lightest);
+  border-color: var(--gameboy-border);
+  font-size: 12px;
+  padding: 8px 12px;
+}
+
+.nes-btn {
+  background: var(--gameboy-medium);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  border-width: 3px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+}
+
+.nes-btn:hover {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  color: var(--gameboy-dark);
+  transform: translateY(-1px);
+}
+
+.nes-btn:active {
+  transform: translateY(0);
+}
+
+.nes-btn.is-primary {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  color: var(--gameboy-dark);
+}
+
+.nes-btn.is-primary:hover {
+  background: var(--gameboy-lightest);
+  border-color: var(--gameboy-light);
+}
+
+.nes-btn.is-success {
+  background: #4caf50;
+  border-color: #45a049;
+  color: white;
+}
+
+.nes-btn.is-warning {
+  background: #ff9800;
+  border-color: #e68900;
+  color: white;
+}
+
+.nes-btn.is-error {
+  background: #f44336;
+  border-color: #d32f2f;
+  color: white;
+}
+
+.nes-btn.is-disabled {
+  background: #666;
+  border-color: #555;
+  color: #999;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.nes-input {
+  background: var(--gameboy-dark);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  border-width: 3px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+
+.nes-input:focus {
+  border-color: var(--gameboy-lightest);
+  outline: none;
+}
+
+.nes-textarea {
+  background: var(--gameboy-dark);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  border-width: 3px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+
+.nes-textarea:focus {
+  border-color: var(--gameboy-lightest);
+  outline: none;
+}
+
+.nes-select {
+  background: var(--gameboy-dark);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  border-width: 3px;
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+
+.nes-select:focus {
+  border-color: var(--gameboy-lightest);
+  outline: none;
+}
+
+.nes-checkbox {
+  color: var(--gameboy-lightest);
+}
+
+.nes-checkbox + span::before {
+  border-color: var(--gameboy-border);
+  border-width: 3px;
+}
+
+.nes-checkbox:checked + span::before {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+}
+
+.nes-radio {
+  color: var(--gameboy-lightest);
+}
+
+.nes-radio + span::before {
+  border-color: var(--gameboy-border);
+  border-width: 3px;
+}
+
+.nes-radio:checked + span::before {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+}
+
+.nes-progress {
+  background: var(--gameboy-dark);
+  border-color: var(--gameboy-border);
+  border-width: 3px;
+  border-radius: 6px;
+  height: 20px;
+}
+
+.nes-progress::-webkit-progress-value {
+  background: var(--gameboy-light);
+  border-radius: 3px;
+}
+
+.nes-progress::-moz-progress-bar {
+  background: var(--gameboy-light);
+  border-radius: 3px;
+}
+
+.nes-progress::-ms-fill {
+  background: var(--gameboy-light);
+  border-radius: 3px;
+}
+
+.nes-table {
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  border-width: 3px;
+}
+
+.nes-table th,
+.nes-table td {
+  border-color: var(--gameboy-border);
+  border-width: 2px;
+  padding: 8px;
+  font-size: 10px;
+}
+
+.nes-table.is-bordered th,
+.nes-table.is-bordered td {
+  border-color: var(--gameboy-border);
+}
+
+.nes-table.is-centered th,
+.nes-table.is-centered td {
+  text-align: center;
+}
+
+.nes-table.is-striped tbody tr:nth-child(odd) {
+  background: var(--gameboy-dark);
+}
+
+.nes-balloon {
+  background: var(--gameboy-medium);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  border-width: 3px;
+  border-radius: 8px;
+}
+
+.nes-balloon::before {
+  border-color: var(--gameboy-border);
+  border-width: 3px;
+}
+
+.nes-balloon::after {
+  border-color: var(--gameboy-medium);
+}
+
+.nes-balloon.from-left::before {
+  border-color: var(--gameboy-border);
+}
+
+.nes-balloon.from-left::after {
+  border-color: var(--gameboy-medium);
+}
+
+.nes-balloon.from-right::before {
+  border-color: var(--gameboy-border);
+}
+
+.nes-balloon.from-right::after {
+  border-color: var(--gameboy-medium);
+}
+
+.nes-badge {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  color: var(--gameboy-dark);
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  border-width: 2px;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+
+.nes-badge.is-splited {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+}
+
+.nes-badge.is-splited .is-dark {
+  background: var(--gameboy-dark);
+  color: var(--gameboy-lightest);
+}
+
+.nes-icon {
+  color: var(--gameboy-lightest);
+}
+
+.nes-icon.is-large {
+  font-size: 1.5em;
+}
+
+.nes-icon.is-medium {
+  font-size: 1.2em;
+}
+
+.nes-icon.is-small {
+  font-size: 1em;
+}
+
+.nes-icon.is-tiny {
+  font-size: 0.8em;
+}
+
+.nes-avatar {
+  border-color: var(--gameboy-border);
+  border-width: 3px;
+  border-radius: 8px;
+}
+
+.nes-avatar.is-rounded {
+  border-radius: 50%;
+}
+
+.nes-avatar.is-large {
+  width: 56px;
+  height: 56px;
+}
+
+.nes-avatar.is-medium {
+  width: 44px;
+  height: 44px;
+}
+
+.nes-avatar.is-small {
+  width: 32px;
+  height: 32px;
+}
+
+.nes-avatar.is-tiny {
+  width: 24px;
+  height: 24px;
+}
+
+.nes-dialog {
+  background: var(--gameboy-dark);
+  border-color: var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  border-width: 3px;
+  border-radius: 8px;
+}
+
+.nes-dialog .menu-list {
+  background: var(--gameboy-medium);
+  border-color: var(--gameboy-border);
+}
+
+.nes-dialog .menu-list .dialog-menu-item {
+  color: var(--gameboy-lightest);
+  padding: 8px 12px;
+  font-size: 10px;
+}
+
+.nes-dialog .menu-list .dialog-menu-item:hover {
+  background: var(--gameboy-light);
+  color: var(--gameboy-dark);
+}
+
+.nes-dialog .menu-list .dialog-menu-item.is-selected {
+  background: var(--gameboy-light);
+  color: var(--gameboy-dark);
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 374px) {
+  .font-pixel {
+    font-size: 8px;
+  }
+  
+  .nes-btn {
+    font-size: 8px;
+    padding: 6px 10px;
+    min-height: 40px;
+    min-width: 40px;
+  }
+  
+  .nes-input,
+  .nes-textarea,
+  .nes-select {
+    font-size: 8px;
+    padding: 8px 10px;
+    min-height: 40px;
+  }
+  
+  .nes-container.with-title > .title {
+    font-size: 10px;
+    padding: 6px 10px;
+  }
+  
+  .nes-avatar.is-large {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .nes-avatar.is-medium {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .nes-avatar.is-small {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .nes-progress {
+    height: 16px;
+  }
+  
+  .spinner-gameboy {
+    width: 28px;
+    height: 28px;
+    border-width: 2px;
+  }
+}
+
+@media (min-width: 375px) and (max-width: 413px) {
+  .font-pixel {
+    font-size: 9px;
+  }
+  
+  .nes-btn {
+    font-size: 9px;
+    padding: 7px 11px;
+    min-height: 42px;
+    min-width: 42px;
+  }
+  
+  .nes-input,
+  .nes-textarea,
+  .nes-select {
+    font-size: 9px;
+    padding: 9px 11px;
+    min-height: 42px;
+  }
+  
+  .nes-container.with-title > .title {
+    font-size: 11px;
+    padding: 7px 11px;
+  }
+  
+  .nes-avatar.is-large {
+    width: 52px;
+    height: 52px;
+  }
+  
+  .nes-avatar.is-medium {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .nes-avatar.is-small {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .nes-progress {
+    height: 18px;
+  }
+  
+  .spinner-gameboy {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+}
+
+@media (min-width: 414px) and (max-width: 767px) {
+  .font-pixel {
+    font-size: 10px;
+  }
+  
+  .nes-btn {
+    font-size: 10px;
+    padding: 8px 12px;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .nes-input,
+  .nes-textarea,
+  .nes-select {
+    font-size: 10px;
+    padding: 10px 12px;
+    min-height: 44px;
+  }
+  
+  .nes-container.with-title > .title {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+  
+  .nes-avatar.is-large {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .nes-avatar.is-medium {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .nes-avatar.is-small {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .nes-progress {
+    height: 20px;
+  }
+  
+  .spinner-gameboy {
+    width: 36px;
+    height: 36px;
+    border-width: 3px;
+  }
+}
+
+@media (min-width: 768px) {
+  .font-pixel {
+    font-size: 12px;
+  }
+  
+  .nes-btn {
+    font-size: 12px;
+    padding: 10px 16px;
+    min-height: 48px;
+    min-width: 48px;
+  }
+  
+  .nes-input,
+  .nes-textarea,
+  .nes-select {
+    font-size: 12px;
+    padding: 12px 16px;
+    min-height: 48px;
+  }
+  
+  .nes-container.with-title > .title {
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+  
+  .nes-avatar.is-large {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .nes-avatar.is-medium {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .nes-avatar.is-small {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .nes-progress {
+    height: 24px;
+  }
+  
+  .spinner-gameboy {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gameboy-dark);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--gameboy-medium);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gameboy-light);
+}
+
+/* Gameboy-style button */
+.btn-gameboy {
+  background: var(--gameboy-medium);
+  border: 3px solid var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  padding: 10px 16px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  border-radius: 6px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-gameboy:hover {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  transform: translateY(-1px);
+}
+
+.btn-gameboy:active {
+  transform: translateY(0);
+}
+
+/* Gameboy-style input */
+.input-gameboy {
+  background: var(--gameboy-dark);
+  border: 3px solid var(--gameboy-border);
+  color: var(--gameboy-lightest);
+  padding: 10px 12px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  width: 100%;
+  border-radius: 6px;
+  min-height: 44px;
+}
+
+.input-gameboy:focus {
+  outline: none;
+  border-color: var(--gameboy-lightest);
+}
+
+/* Gameboy-style card */
+.card-gameboy {
+  background: var(--gameboy-medium);
+  border: 3px solid var(--gameboy-border);
+  padding: 16px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+/* Retro progress bar */
+.progress-bar-gameboy {
+  width: 100%;
+  height: 20px;
+  background: var(--gameboy-dark);
+  border: 3px solid var(--gameboy-border);
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.progress-fill-gameboy {
+  height: 100%;
+  background: var(--gameboy-light);
+  transition: width 0.3s ease;
+  border-radius: 3px;
+}
+
+/* Pixel-perfect borders */
+.border-gameboy {
+  border: 3px solid var(--gameboy-border);
+}
+
+.border-gameboy-light {
+  border: 3px solid var(--gameboy-light);
+}
+
+.border-gameboy-lightest {
+  border: 3px solid var(--gameboy-lightest);
+}
+
+/* Text colors */
+.text-gameboy-dark {
+  color: var(--gameboy-dark);
+}
+
+.text-gameboy-medium {
+  color: var(--gameboy-medium);
+}
+
+.text-gameboy-light {
+  color: var(--gameboy-light);
+}
+
+.text-gameboy-lightest {
+  color: var(--gameboy-lightest);
+}
+
+/* Background colors */
+.bg-gameboy-dark {
+  background: var(--gameboy-dark);
+}
+
+.bg-gameboy-medium {
+  background: var(--gameboy-medium);
+}
+
+.bg-gameboy-light {
+  background: var(--gameboy-light);
+}
+
+.bg-gameboy-lightest {
+  background: var(--gameboy-lightest);
+}
+
+/* Hover effects */
+.hover-gameboy:hover {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+}
+
+/* Animation for pixel art */
+@keyframes pixelate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.pixel-animation {
+  animation: pixelate 0.3s ease;
+}
+
+/* Loading spinner */
+.spinner-gameboy {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--gameboy-medium);
+  border-top: 3px solid var(--gameboy-lightest);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile-specific utility classes */
+.mobile-hidden {
+  display: none;
+}
+
+.mobile-full {
+  width: 100%;
+}
+
+.mobile-center {
+  text-align: center;
+}
+
+.mobile-p-2 {
+  padding: 12px;
+}
+
+.mobile-p-3 {
+  padding: 16px;
+}
+
+.mobile-p-4 {
+  padding: 20px;
+}
+
+.mobile-m-2 {
+  margin: 12px;
+}
+
+.mobile-m-3 {
+  margin: 16px;
+}
+
+.mobile-m-4 {
+  margin: 20px;
+}
+
+/* Tablet and desktop utilities */
+@media (min-width: 768px) {
+  .mobile-hidden {
+    display: block;
+  }
+  
+  .tablet-hidden {
+    display: none;
+  }
+  
+  .desktop-hidden {
+    display: block;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tablet-hidden {
+    display: block;
+  }
+  
+  .desktop-hidden {
+    display: none;
+  }
+}
+
+/* Grid layouts for different screen sizes */
+.grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.grid-tablet {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.grid-desktop {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .grid-mobile {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-mobile {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Utility classes */
+.container-gameboy {
+  max-width: 100vw;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+@media (min-width: 375px) {
+  .container-gameboy {
+    padding: 20px;
+  }
+}
+
+@media (min-width: 414px) {
+  .container-gameboy {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-gameboy {
+    max-width: 640px;
+    padding: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-gameboy {
+    max-width: 800px;
+    padding: 40px;
+  }
+}
+
+.text-center-gameboy {
+  text-align: center;
+}
+
+.flex-gameboy {
+  display: flex;
+}
+
+.flex-col-gameboy {
+  flex-direction: column;
+}
+
+.items-center-gameboy {
+  align-items: center;
+}
+
+.justify-center-gameboy {
+  justify-content: center;
+}
+
+.space-y-gameboy > * + * {
+  margin-top: 16px;
+}
+
+.space-x-gameboy > * + * {
+  margin-left: 16px;
+}
+
+/* Touch-friendly button sizes */
+.touch-button {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile navigation */
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--gameboy-dark);
+  border-top: 3px solid var(--gameboy-border);
+  z-index: 1000;
+  padding: 12px;
+}
+
+.mobile-nav-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  color: var(--gameboy-light);
+  text-decoration: none;
+  font-size: 8px;
+  transition: all 0.3s ease;
+  min-height: 44px;
+  justify-content: center;
+}
+
+.mobile-nav-item.active {
+  color: var(--gameboy-lightest);
+}
+
+.mobile-nav-item:hover {
+  color: var(--gameboy-lightest);
+  transform: translateY(-2px);
+}
+
+/* Responsive images */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Mobile modal adjustments */
+.mobile-modal {
+  padding: 16px;
+  margin: 12px;
+  max-height: calc(100vh - 84px); /* Account for header height (60px) + margin (24px) */
+  overflow-y: auto;
+  border-radius: 12px;
+  margin-top: 84px; /* Ensure it appears below the fixed header */
+}
+
+@media (min-width: 768px) {
+  .mobile-modal {
+    padding: 24px;
+    margin: 20px;
+    max-height: calc(100vh - 100px);
+    margin-top: 100px;
+  }
+}
+
+/* Safe area for mobile devices */
+.safe-area {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-top: env(safe-area-inset-top);
+}
+
+/* NES.css Animation Enhancements */
+.nes-container.is-animated {
+  animation: nes-bounce 0.5s ease-in-out;
+}
+
+@keyframes nes-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0);
+  }
+}
+
+.nes-btn.is-animated {
+  animation: nes-press 0.1s ease-in-out;
+}
+
+@keyframes nes-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.nes-avatar.is-animated {
+  animation: nes-spin 2s linear infinite;
+}
+
+@keyframes nes-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Pokemon-specific NES styling */
+.pokemon-card {
+  background: var(--gameboy-medium);
+  border: 3px solid var(--gameboy-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.pokemon-card:hover {
+  border-color: var(--gameboy-lightest);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pokemon-card.is-selected {
+  border-color: var(--gameboy-lightest);
+  background: var(--gameboy-light);
+  color: var(--gameboy-dark);
+}
+
+/* Achievement animations */
+.achievement-popup {
+  animation: achievement-slide 0.5s ease-out;
+}
+
+@keyframes achievement-slide {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Sound effect visual feedback */
+.sound-wave {
+  animation: sound-wave 0.3s ease-out;
+}
+
+@keyframes sound-wave {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Fixed header for mobile */
+.mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--gameboy-dark);
+  border-bottom: 3px solid var(--gameboy-border);
+  z-index: 1001;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 60px;
+}
+
+.mobile-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.mobile-header-title {
+  font-size: 12px;
+  color: var(--gameboy-lightest);
+  font-weight: bold;
+}
+
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Main content padding for fixed header */
+.mobile-main-content {
+  padding-top: 60px;
+  min-height: calc(100vh - 60px);
+}
+
+/* Modal positioning fixes */
+.fixed inset-0 {
+  padding-top: 60px; /* Account for fixed header */
+}
+
+.fixed.inset-0 {
+  padding-top: 60px;
+}
+
+/* Ensure modals appear above header */
+.fixed.inset-0.bg-black.bg-opacity-50 {
+  z-index: 1002;
+}
+
+.fixed.inset-0.bg-black.bg-opacity-50 .nes-container {
+  margin-top: 20px; /* Additional spacing from header */
+}
+
+/* Audio controls styling */
+.audio-controls {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.audio-control {
+  background: var(--gameboy-medium);
+  border: 3px solid var(--gameboy-border);
+  border-radius: 6px;
+  padding: 8px;
+  color: var(--gameboy-lightest);
+  font-size: 10px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.audio-control:hover {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  color: var(--gameboy-dark);
+}
+
+.audio-control.active {
+  background: var(--gameboy-light);
+  border-color: var(--gameboy-lightest);
+  color: var(--gameboy-dark);
+}
+
+.audio-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  min-width: 200px;
+  z-index: 1003;
+  background: var(--gameboy-dark);
+  border: 3px solid var(--gameboy-border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.audio-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.audio-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.audio-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.audio-label {
+  font-size: 10px;
+  color: var(--gameboy-lightest);
+  font-weight: bold;
+}
+
+.audio-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.audio-buttons .nes-btn {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 4px;
+  font-size: 8px;
+}
+
+.volume-slider {
+  width: 100%;
+  height: 6px;
+  background: var(--gameboy-dark);
+  border: 2px solid var(--gameboy-border);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--gameboy-lightest);
+  border: 2px solid var(--gameboy-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  background: var(--gameboy-light);
+  transform: scale(1.1);
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--gameboy-lightest);
+  border: 2px solid var(--gameboy-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+  background: var(--gameboy-light);
+  transform: scale(1.1);
+}
+
+.volume-slider:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.volume-slider:disabled::-webkit-slider-thumb {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.volume-slider:disabled::-moz-range-thumb {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.volume-text {
+  font-size: 8px;
+  color: var(--gameboy-light);
+  text-align: center;
+  margin-top: 4px;
+}
+
+/* Mobile responsive audio controls */
+@media (max-width: 374px) {
+  .audio-menu {
+    min-width: 180px;
+    padding: 12px;
+  }
+  
+  .audio-label {
+    font-size: 8px;
+  }
+  
+  .audio-buttons .nes-btn {
+    min-width: 28px;
+    min-height: 28px;
+    font-size: 6px;
+  }
+  
+  .volume-slider {
+    height: 4px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .volume-text {
+    font-size: 6px;
+  }
+}
+
+@media (min-width: 375px) and (max-width: 413px) {
+  .audio-menu {
+    min-width: 190px;
+    padding: 14px;
+  }
+  
+  .audio-label {
+    font-size: 9px;
+  }
+  
+  .audio-buttons .nes-btn {
+    min-width: 30px;
+    min-height: 30px;
+    font-size: 7px;
+  }
+  
+  .volume-slider {
+    height: 5px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .volume-text {
+    font-size: 7px;
+  }
+}
+
+@media (min-width: 414px) and (max-width: 767px) {
+  .audio-menu {
+    min-width: 200px;
+    padding: 16px;
+  }
+  
+  .audio-label {
+    font-size: 10px;
+  }
+  
+  .audio-buttons .nes-btn {
+    min-width: 32px;
+    min-height: 32px;
+    font-size: 8px;
+  }
+  
+  .volume-slider {
+    height: 6px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .volume-text {
+    font-size: 8px;
+  }
+}
+
+@media (min-width: 768px) {
+  .audio-menu {
+    min-width: 220px;
+    padding: 20px;
+  }
+  
+  .audio-label {
+    font-size: 12px;
+  }
+  
+  .audio-buttons .nes-btn {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 10px;
+  }
+  
+  .volume-slider {
+    height: 8px;
+  }
+  
+  .volume-slider::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .volume-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .volume-text {
+    font-size: 10px;
+  }
+}
+
+/* Mobile menu improvements */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 80px 16px 16px 16px;
+}
+
+.mobile-menu-content {
+  background: var(--gameboy-dark);
+  border: 3px solid var(--gameboy-border);
+  border-radius: 12px;
+  padding: 20px;
+  min-width: 200px;
+  max-width: 280px;
+  animation: menu-slide 0.3s ease-out;
+}
+
+@keyframes menu-slide {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  color: var(--gameboy-lightest);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+
+.mobile-menu-item:hover {
+  background: var(--gameboy-medium);
+  transform: translateX(4px);
+}
+
+.mobile-menu-item:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-menu-icon {
+  font-size: 16px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.mobile-menu-text {
+  flex: 1;
+}
+
+.mobile-menu-description {
+  font-size: 8px;
+  color: var(--gameboy-light);
+  margin-top: 2px;
+}
+

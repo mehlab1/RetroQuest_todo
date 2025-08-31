@@ -3,123 +3,237 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { PrismaClient } from '@prisma/client';
 import passport from 'passport';
+import rateLimit from 'express-rate-limit';
+import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Register
-router.post('/register', async (req, res) => {
-  try {
-    const { email, username, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
-    }
-
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Get random starter Pokémon
-    const pokemonPets = await prisma.pokemonPet.findMany();
-    const randomPet = pokemonPets[Math.floor(Math.random() * pokemonPets.length)];
-
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        username: username || email.split('@')[0],
-        password: hashedPassword,
-        pokemonPetId: randomPet?.petId,
-        gamification: {
-          create: {
-            points: 0,
-            level: 1,
-            streakCount: 0,
-            badges: []
-          }
-        }
-      },
-      include: {
-        pokemonPet: true,
-        gamification: true
-      }
-    });
-
-    // Generate JWT
-    const token = jwt.sign(
-      { userId: user.userId, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
-
-    res.status(201).json({
-      user: userWithoutPassword,
-      token
-    });
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ error: 'Registration failed' });
-  }
+// Rate limiting for security
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: { error: 'Too many login attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
-// Login
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // limit each IP to 3 registration attempts per hour
+  message: { error: 'Too many registration attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email and password are required' });
+// Input validation middleware
+const validateEmail = body('email')
+  .isEmail()
+  .normalizeEmail()
+  .withMessage('Please provide a valid email address');
+
+const validatePassword = body('password')
+  .isLength({ min: 8 })
+  .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+  .withMessage('Password must be at least 8 characters with uppercase, lowercase, number, and special character');
+
+const validateUsername = body('username')
+  .isLength({ min: 3, max: 20 })
+  .matches(/^[a-zA-Z0-9_]+$/)
+  .withMessage('Username must be 3-20 characters, letters, numbers, and underscores only');
+
+// Enhanced Register with security
+router.post('/register', 
+  registerLimiter,
+  [validateEmail, validatePassword, validateUsername],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Validation failed',
+          details: errors.array()
+        });
+      }
+
+      const { email, username, password } = req.body;
+
+      // Check if user exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() }
+      });
+
+      if (existingUser) {
+        return res.status(400).json({ error: 'An account with this email already exists' });
+      }
+
+      // Check if username is taken
+      const existingUsername = await prisma.user.findFirst({
+        where: { username: username.toLowerCase() }
+      });
+
+      if (existingUsername) {
+        return res.status(400).json({ error: 'Username is already taken' });
+      }
+
+      // Hash password with higher salt rounds
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+      // Get random starter Pokémon
+      const pokemonPets = await prisma.pokemonPet.findMany();
+      const randomPet = pokemonPets[Math.floor(Math.random() * pokemonPets.length)];
+
+      // Create user with sanitized data
+      const user = await prisma.user.create({
+        data: {
+          email: email.toLowerCase().trim(),
+          username: username.toLowerCase().trim(),
+          password: hashedPassword,
+          pokemonPetId: randomPet?.petId,
+          gamification: {
+            create: {
+              points: 0,
+              level: 1,
+              streakCount: 0,
+              badges: []
+            }
+          }
+        },
+        include: {
+          pokemonPet: true,
+          gamification: true
+        }
+      });
+
+      // Generate JWT with shorter expiration for security
+      const token = jwt.sign(
+        { 
+          userId: user.userId, 
+          email: user.email,
+          username: user.username
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' } // Reduced from 24h to 7 days
+      );
+
+      // Remove password from response
+      const { password: _, ...userWithoutPassword } = user;
+
+      // Log successful registration (without sensitive data)
+      console.log(`New user registered: ${user.username} (${user.email})`);
+
+      res.status(201).json({
+        message: 'Account created successfully',
+        user: userWithoutPassword,
+        token
+      });
+    } catch (error) {
+      console.error('Register error:', error);
+      
+      // Handle specific Prisma errors
+      if (error.code === 'P2002') {
+        return res.status(409).json({
+          error: 'Duplicate entry',
+          message: 'An account with this email or username already exists'
+        });
+      }
+
+      res.status(500).json({ 
+        error: 'Registration failed',
+        message: 'Unable to create account. Please try again.'
+      });
+    }
+  }
+);
+
+// Enhanced Login with security
+router.post('/login', 
+  loginLimiter,
+  [validateEmail],
+  async (req, res) => {
+    try {
+      // Check for validation errors
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ 
+          error: 'Invalid email format',
+          details: errors.array()
+        });
+      }
+
+      const { email, password } = req.body;
+
+      if (!password) {
+        return res.status(400).json({ error: 'Password is required' });
+      }
+
+      // Find user by email (case-insensitive)
+      const user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase().trim() },
+        include: {
+          pokemonPet: true,
+          gamification: true
+        }
+      });
+
+      if (!user || !user.password) {
+        return res.status(401).json({ 
+          error: 'Invalid credentials',
+          message: 'Email or password is incorrect'
+        });
+      }
+
+      // Check password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        message: 'Email or password is incorrect'
+      });
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: {
-        pokemonPet: true,
-        gamification: true
+    // Update last login timestamp
+    await prisma.user.update({
+      where: { userId: user.userId },
+      data: {
+        gamification: {
+          ...user.gamification,
+          lastLoginDate: new Date().toISOString()
+        }
       }
     });
 
-    if (!user || !user.password) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Invalid credentials' });
-    }
-
-    // Generate JWT
+    // Generate JWT with shorter expiration for security
     const token = jwt.sign(
-      { userId: user.userId, email: user.email },
+      { 
+        userId: user.userId, 
+        email: user.email,
+        username: user.username
+      },
       process.env.JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '7d' } // Reduced from 24h to 7 days
     );
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
 
+    // Log successful login (without sensitive data)
+    console.log(`User logged in: ${user.username} (${user.email})`);
+
     res.json({
+      message: 'Login successful',
       user: userWithoutPassword,
       token
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    res.status(500).json({ 
+      error: 'Login failed',
+      message: 'Unable to authenticate. Please try again.'
+    });
   }
 });
 

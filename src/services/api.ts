@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { Pokemon } from '../data/pokemon';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Use relative URL for production, fallback to localhost for development
+const API_BASE_URL = import.meta.env.PROD ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -22,8 +24,8 @@ export const authApi = {
   login: (email: string, password: string) =>
     api.post('/auth/login', { email, password }),
 
-  register: (email: string, username: string, password: string) =>
-    api.post('/auth/register', { email, username, password }),
+  register: (email: string, username: string, password: string, pokemon: Pokemon) =>
+    api.post('/auth/register', { email, username, password, pokemon }),
 
   getCurrentUser: () => api.get('/auth/me'),
 
@@ -31,6 +33,11 @@ export const authApi = {
   googleLogin: () => {
     window.location.href = `${API_BASE_URL}/auth/google`;
   },
+
+  logout: () => api.post('/auth/logout'),
+  getProfile: () => api.get('/auth/profile'),
+  updateProfile: (data: any) => api.put('/auth/profile', data),
+  googleAuth: () => api.get('/auth/google'),
 };
 
 // Tasks API
@@ -45,22 +52,18 @@ export const tasksApi = {
 
 // Users API
 export const usersApi = {
-  getProfile: () => api.get('/users/profile'),
-  updateProfile: (data: any) => api.put('/users/profile', data),
-  getLeaderboard: () => api.get('/users/leaderboard'),
+  getProfile: () => api.get('/users/profile')
+};
+
+// Quests API
+export const questsApi = {
+  getDailyQuests: () => api.get('/quests/daily'),
 };
 
 // Gamification API
 export const gamificationApi = {
   getStats: () => api.get('/gamification'),
   addBadge: (badge: string) => api.post('/gamification/badge', { badge }),
-};
-
-// Quests API
-export const questsApi = {
-  getDailyQuests: () => api.get('/quests'),
-  createQuest: (quest: { title: string; points?: number }) =>
-    api.post('/quests', quest),
 };
 
 // History API
@@ -73,6 +76,9 @@ export const historyApi = {
 export const pokemonApi = {
   getAllPokemon: () => api.get('/pokemon'),
   getPokemonById: (id: number) => api.get(`/pokemon/${id}`),
+  getCaughtPokemon: () => api.get('/pokemon/caught/my'),
+  catchPokemon: (pokemonData: any) => api.post('/pokemon/catch', pokemonData),
+  releasePokemon: (pokemonId: number) => api.delete(`/pokemon/release/${pokemonId}`),
 };
 
 export default api;

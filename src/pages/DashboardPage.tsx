@@ -3,6 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useAchievement } from '../contexts/AchievementContext';
 import { tasksApi, questsApi } from '../services/api';
 import { Zap, Target, Trophy, Heart } from 'lucide-react';
+import SwipeableTaskList from '../components/SwipeableTaskList';
+import soundEffects from '../utils/soundEffects';
 
 interface Task {
   taskId: number;
@@ -38,6 +40,7 @@ const DashboardPage: React.FC = () => {
       setDailyQuests(questsResponse.data);
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
+      soundEffects.playError();
     } finally {
       setLoading(false);
     }
@@ -49,6 +52,13 @@ const DashboardPage: React.FC = () => {
       await loadDashboardData();
       const updatedUser = await refreshUser();
       
+      // Play appropriate sound based on task state
+      if (isDone) {
+        soundEffects.playMenuSelect(); // Unchecking
+      } else {
+        soundEffects.playTaskComplete(); // Completing
+      }
+      
       // Show achievement notifications
       if (updatedUser?.gamification) {
         const { level, points, badges, streakCount } = updatedUser.gamification;
@@ -57,147 +67,143 @@ const DashboardPage: React.FC = () => {
         if (badges.length > 0) {
           const latestBadge = badges[badges.length - 1];
           showAchievement(`Unlocked: ${latestBadge}`, 'badge');
+          soundEffects.playBadgeUnlock();
         }
         
         // Check for level up
         if (level > 1) {
           showAchievement(`Level Up! You're now level ${level}`, 'level');
+          soundEffects.playLevelUp();
         }
         
         // Check for streak milestones
         if (streakCount >= 7) {
           showAchievement(`🔥 ${streakCount} Day Streak!`, 'streak');
+          soundEffects.playStreakMilestone();
         }
       }
     } catch (error) {
       console.error('Failed to toggle task:', error);
+      soundEffects.playError();
     }
   };
 
   const getCurrentSprite = () => {
     if (!user?.pokemonPet) return '🎮';
     
-    const level = user.level;
-    if (level >= 15) return user.pokemonPet.spriteStage3;
-    if (level >= 8) return user.pokemonPet.spriteStage2;
-    return user.pokemonPet.spriteStage1;
+    const { level } = user;
+    const evolutionLevels = user.pokemonPet.evolutionLevels || { stage2: 16, stage3: 32 };
+    
+    if (level >= evolutionLevels.stage3) {
+      return user.pokemonPet.spriteStage3;
+    } else if (level >= evolutionLevels.stage2) {
+      return user.pokemonPet.spriteStage2;
+    } else {
+      return user.pokemonPet.spriteStage1;
+    }
   };
-
-  const getHPPercentage = () => {
-    const pointsInLevel = user?.points ? user.points % 100 : 0;
-    return pointsInLevel;
-  };
-
-  const completedToday = todayTasks.filter(task => task.isDone).length;
-  const totalToday = todayTasks.length;
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-96">
+      <div className="min-h-screen bg-gameboy-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 animate-pulse">🎮</div>
-          <p className="font-pixel text-xs text-gameboy-light">Loading...</p>
+          <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🎮</div>
+          <p className="font-pixel text-sm text-gameboy-lightest">Loading RetroQuest...</p>
         </div>
       </div>
     );
   }
 
+  const totalToday = todayTasks.length;
+  const completedToday = todayTasks.filter(task => task.isDone).length;
+  const progressPercentage = totalToday > 0 ? (completedToday / totalToday) * 100 : 0;
+
   return (
-    <div className="space-y-6">
-      {/* Trainer Card */}
-      <div className="bg-gameboy-dark border-4 border-gameboy-border rounded-lg p-4">
-        <div className="flex items-center space-x-4 mb-4">
-          <div className="w-16 h-16 bg-gameboy-light border-4 border-gameboy-lightest rounded-lg flex items-center justify-center text-2xl animate-float">
-            {getCurrentSprite()}
+    <div className="min-h-screen bg-gameboy-dark p-4 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="text-4xl">
+            <img
+              src={getCurrentSprite()}
+              alt={user?.pokemonPet?.name || 'Pokemon'}
+              className="w-16 h-16 object-contain"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = '🎮'; // Fallback emoji
+              }}
+            />
           </div>
-          <div className="flex-1">
-            <h2 className="font-pixel text-sm text-gameboy-lightest mb-1">
-              {user?.username}
-            </h2>
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="font-pixel text-xs text-gameboy-light">Lv.{user?.level}</span>
-              <div className="flex-1 h-3 bg-gameboy-medium border-2 border-gameboy-border rounded overflow-hidden">
-                <div 
-                  className="h-full bg-gameboy-light transition-all duration-500"
-                  style={{ width: `${getHPPercentage()}%` }}
-                />
-              </div>
-              <span className="font-pixel text-xs text-gameboy-light">{getHPPercentage()}/100</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <Zap size={12} className="text-gameboy-lightest" />
-                <span className="font-pixel text-xs text-gameboy-lightest">{user?.points}pts</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Heart size={12} className="text-red-400" />
-                <span className="font-pixel text-xs text-gameboy-lightest">
-                  {user?.gamification?.streakCount || 0}
-                </span>
-              </div>
-            </div>
+          <div>
+            <h1 className="font-pixel text-lg text-gameboy-lightest">Welcome back, {user?.username || 'Trainer'}!</h1>
+            <p className="font-pixel text-xs text-gameboy-light">
+              Level {user?.level || 1} • {user?.points || 0} points
+              {user?.pokemonPet && (
+                <span className="ml-2">• {user.pokemonPet.name}</span>
+              )}
+            </p>
           </div>
         </div>
-
-        {/* Pet Info */}
-        <div className="bg-gameboy-medium border-2 border-gameboy-border rounded p-3">
-          <p className="font-pixel text-xs text-gameboy-light mb-1">Companion:</p>
-          <p className="font-pixel text-xs text-gameboy-lightest">
-            {user?.pokemonPet?.name || 'No companion yet'}
-          </p>
+        <div className="flex items-center space-x-2">
+          <Heart size={16} className="text-red-400" />
+          <span className="font-pixel text-sm text-gameboy-lightest">{user?.gamification?.streakCount || 0}</span>
         </div>
       </div>
 
       {/* Today's Progress */}
-      <div className="bg-gameboy-dark border-4 border-gameboy-border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-4">
+      <div className="bg-gameboy-medium border-2 border-gameboy-border rounded-lg p-4">
+        <div className="flex items-center space-x-2 mb-4">
+          <Target size={14} className="text-green-400" />
           <h3 className="font-pixel text-sm text-gameboy-lightest">Today's Progress</h3>
-          <div className="flex items-center space-x-1">
-            <Target size={14} className="text-gameboy-light" />
-            <span className="font-pixel text-xs text-gameboy-light">
-              {completedToday}/{totalToday}
+        </div>
+
+        {/* Retro Progress Bar */}
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-pixel text-xs text-gameboy-lightest">
+              {completedToday}/{totalToday} completed
             </span>
+            <span className="font-pixel text-xs text-gameboy-light">
+              {Math.round(progressPercentage)}%
+            </span>
+          </div>
+          
+          {/* Retro Progress Bar Container */}
+          <div className="relative w-full h-6 bg-gameboy-dark border-2 border-gameboy-border rounded-none overflow-hidden">
+            {/* Progress Fill */}
+            <div 
+              className="h-full bg-green-400 transition-all duration-500 ease-out"
+              style={{ width: `${progressPercentage}%` }}
+            />
+            
+            {/* Retro Progress Bar Pattern */}
+            <div className="absolute inset-0 opacity-20">
+              <div className="h-full w-full" style={{
+                backgroundImage: `repeating-linear-gradient(
+                  45deg,
+                  transparent,
+                  transparent 4px,
+                  rgba(255, 255, 255, 0.1) 4px,
+                  rgba(255, 255, 255, 0.1) 8px
+                )`
+              }} />
+            </div>
+            
+            {/* Progress Bar Border Overlay */}
+            <div className="absolute inset-0 border-2 border-gameboy-lightest opacity-30 pointer-events-none" />
           </div>
         </div>
 
-        {totalToday > 0 ? (
-          <div className="space-y-2">
-            {todayTasks.slice(0, 3).map((task) => (
-              <div
-                key={task.taskId}
-                className="flex items-center space-x-3 p-2 bg-gameboy-medium border-2 border-gameboy-border rounded hover:border-gameboy-light transition-colors cursor-pointer"
-                onClick={() => toggleTask(task.taskId, task.isDone)}
-              >
-                <div className={`w-6 h-6 border-2 rounded flex items-center justify-center transition-colors ${
-                  task.isDone 
-                    ? 'bg-gameboy-light border-gameboy-lightest text-gameboy-dark' 
-                    : 'border-gameboy-border bg-gameboy-dark'
-                }`}>
-                  {task.isDone && '✓'}
-                </div>
-                <span className={`font-pixel text-xs flex-1 ${
-                  task.isDone ? 'line-through text-gameboy-light' : 'text-gameboy-lightest'
-                }`}>
-                  {task.title}
-                </span>
-              </div>
-            ))}
-            {totalToday > 3 && (
-              <p className="font-pixel text-xs text-gameboy-light text-center mt-2">
-                +{totalToday - 3} more tasks...
-              </p>
-            )}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="w-12 h-12 mx-auto mb-3 opacity-50">🎯</div>
-            <p className="font-pixel text-xs text-gameboy-light">No tasks for today</p>
-          </div>
-        )}
+        {/* Swipeable Task List */}
+        <SwipeableTaskList 
+          tasks={todayTasks}
+          onToggleTask={toggleTask}
+          maxVisible={3}
+        />
       </div>
 
       {/* Daily Quests */}
-      <div className="bg-gameboy-dark border-4 border-gameboy-border rounded-lg p-4">
+      <div className="bg-gameboy-medium border-2 border-gameboy-border rounded-lg p-4">
         <div className="flex items-center space-x-2 mb-4">
           <Trophy size={14} className="text-yellow-400" />
           <h3 className="font-pixel text-sm text-gameboy-lightest">Daily Quests</h3>
@@ -232,12 +238,12 @@ const DashboardPage: React.FC = () => {
 };
 
 const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: number }> = ({ icon, label, value }) => (
-  <div className="bg-gameboy-dark border-2 border-gameboy-border rounded-lg p-4 text-center hover:border-gameboy-light transition-colors">
-    <div className="w-8 h-8 mx-auto mb-2 text-gameboy-light">
+  <div className="bg-gameboy-medium border-2 border-gameboy-border rounded-lg p-4">
+    <div className="flex items-center space-x-2 mb-2">
       {icon}
+      <span className="font-pixel text-xs text-gameboy-lightest">{label}</span>
     </div>
-    <p className="font-pixel text-xs text-gameboy-light mb-1">{label}</p>
-    <p className="font-pixel text-sm text-gameboy-lightest">{value}</p>
+    <span className="font-pixel text-lg text-gameboy-lightest">{value}</span>
   </div>
 );
 

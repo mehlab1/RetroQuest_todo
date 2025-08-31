@@ -27,6 +27,7 @@ model User {
   taskHistory   TaskHistory[]
   gamification  Gamification?
   dailyQuests   DailyQuest[]
+  caughtPokemon UserCaughtPokemon[]
 
   @@map("users")
 }
@@ -104,4 +105,25 @@ model DailyQuest {
   user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("daily_quests")
+}
+
+model UserCaughtPokemon {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  pokemonId     Int      @map("pokemon_id")
+  pokemonName   String   @map("pokemon_name")
+  pokemonSprite String   @map("pokemon_sprite")
+  pokemonType   String   @map("pokemon_type")
+  rarity        String
+  difficulty    Int
+  description   String
+  pointsReward  Int      @map("points_reward")
+  caughtAt      DateTime @default(now()) @map("caught_at")
+  isCompanion   Boolean  @default(false) @map("is_companion")
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  
+  @@unique([userId, pokemonId])
+  @@map("user_caught_pokemon")
 }

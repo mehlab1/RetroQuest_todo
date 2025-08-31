@@ -52,12 +52,12 @@ const LandingPage: React.FC = () => {
             </Link>
           </div>
 
-          {/* Demo Info */}
+          {/* Security Info */}
           <div className="mt-8 p-4 bg-gameboy-dark border-2 border-gameboy-border rounded-lg">
-            <p className="font-pixel text-xs text-gameboy-light mb-2">Demo Accounts:</p>
-            <p className="font-pixel text-xs text-gameboy-lightest">ash@pokemon.com</p>
-            <p className="font-pixel text-xs text-gameboy-lightest">misty@pokemon.com</p>
-            <p className="font-pixel text-xs text-gameboy-light mt-1">Password: password123</p>
+            <p className="font-pixel text-xs text-gameboy-light mb-2">🔐 Secure Authentication:</p>
+            <p className="font-pixel text-xs text-gameboy-lightest">• Google OAuth 2.0</p>
+            <p className="font-pixel text-xs text-gameboy-lightest">• JWT Token Security</p>
+            <p className="font-pixel text-xs text-gameboy-lightest">• Encrypted Passwords</p>
           </div>
         </div>
       </div>

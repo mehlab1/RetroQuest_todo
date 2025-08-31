@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Home, CheckSquare, BarChart3, User } from 'lucide-react';
+import soundEffects from '../utils/soundEffects';
 
 const BottomNavigation: React.FC = () => {
   const navItems = [
@@ -10,6 +11,10 @@ const BottomNavigation: React.FC = () => {
     { path: '/profile', icon: User, label: 'Profile' },
   ];
 
+  const handleNavClick = () => {
+    soundEffects.playMenuSelect();
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gameboy-dark border-t-4 border-gameboy-border">
       <div className="max-w-md mx-auto">
@@ -18,6 +23,7 @@ const BottomNavigation: React.FC = () => {
             <NavLink
               key={path}
               to={path}
+              onClick={handleNavClick}
               className={({ isActive }) => `
                 flex flex-col items-center space-y-1 p-2 rounded-lg transition-all duration-200
                 ${isActive 

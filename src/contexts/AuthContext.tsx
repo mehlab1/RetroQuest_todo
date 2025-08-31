@@ -1,29 +1,42 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authApi } from '../services/api';
+import { Pokemon } from '../data/pokemon';
+
+interface Gamification {
+  level: number;
+  points: number;
+  badges: string[];
+  streakCount: number;
+}
+
+interface PokemonPet {
+  id: number;
+  name: string;
+  spriteStage1: string;
+  spriteStage2: string;
+  spriteStage3: string;
+  type: string;
+  evolutionLevels: {
+    stage2: number;
+    stage3: number;
+  };
+}
 
 interface User {
   userId: number;
   email: string;
   username: string;
-  points: number;
   level: number;
-  pokemonPet?: {
-    name: string;
-    spriteStage1: string;
-    spriteStage2: string;
-    spriteStage3: string;
-  };
-  gamification?: {
-    streakCount: number;
-    badges: string[];
-  };
+  points: number;
+  gamification?: Gamification;
+  pokemonPet?: PokemonPet;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithToken: (token: string, user: User) => void;
-  register: (email: string, username: string, password: string) => Promise<void>;
+  register: (email: string, username: string, password: string, pokemon: Pokemon) => Promise<void>;
   logout: () => void;
   loading: boolean;
   refreshUser: () => Promise<void>;
@@ -85,9 +98,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(user);
   };
 
-  const register = async (email: string, username: string, password: string) => {
+  const register = async (email: string, username: string, password: string, pokemon: Pokemon) => {
     try {
-      const response = await authApi.register(email, username, password);
+      const response = await authApi.register(email, username, password, pokemon);
       const { user, token } = response.data;
       
       localStorage.setItem('token', token);

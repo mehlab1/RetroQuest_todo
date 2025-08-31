@@ -1,0 +1,130 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId        Int              @id @default(autoincrement()) @map("user_id")
+  email         String           @unique
+  username      String?
+  password      String?
+  googleId      String?          @unique @map("google_id")
+  points        Int              @default(0)
+  level         Int              @default(1)
+  pokemonPetId  Int?             @map("pokemon_pet_id")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  
+  // Relations
+  pokemonPet    PokemonPet?      @relation(fields: [pokemonPetId], references: [petId])
+  tasks         Task[]
+  taskHistory   TaskHistory[]
+  gamification  Gamification?
+  dailyQuests   DailyQuest[]
+  caughtPokemon UserCaughtPokemon[]
+
+  @@map("users")
+}
+
+model PokemonPet {
+  petId         Int      @id @default(autoincrement()) @map("pet_id")
+  name          String
+  spriteStage1  String   @map("sprite_stage_1")
+  spriteStage2  String   @map("sprite_stage_2")
+  spriteStage3  String   @map("sprite_stage_3")
+  levelRequired Int      @map("level_required")
+  
+  // Relations
+  users         User[]
+
+  @@map("pokemon_pets")
+}
+
+model Task {
+  taskId      Int           @id @default(autoincrement()) @map("task_id")
+  userId      Int           @map("user_id")
+  title       String
+  description String?
+  category    String?
+  priority    String?       @default("Medium")
+  isDone      Boolean       @default(false) @map("is_done")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  
+  // Relations
+  user        User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  taskHistory TaskHistory[]
+
+  @@map("tasks")
+}
+
+model TaskHistory {
+  historyId   Int       @id @default(autoincrement()) @map("history_id")
+  userId      Int       @map("user_id")
+  taskId      Int       @map("task_id")
+  date        DateTime  @db.Date
+  isDone      Boolean   @map("is_done")
+  completedAt DateTime? @map("completed_at")
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  task        Task      @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+
+  @@map("task_history")
+}
+
+model Gamification {
+  gamificationId Int      @id @default(autoincrement()) @map("gamification_id")
+  userId         Int      @unique @map("user_id")
+  points         Int      @default(0)
+  streakCount    Int      @default(0) @map("streak_count")
+  badges         String[] @default([])
+  level          Int      @default(1)
+  lastUpdated    DateTime @default(now()) @map("last_updated")
+  
+  // Relations
+  user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("gamification")
+}
+
+model DailyQuest {
+  questId   Int      @id @default(autoincrement()) @map("quest_id")
+  userId    Int      @map("user_id")
+  title     String
+  points    Int      @default(0)
+  isCompleted Boolean @default(false) @map("is_completed")
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  // Relations
+  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@map("daily_quests")
+}
+
+model UserCaughtPokemon {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  pokemonId     Int      @map("pokemon_id")
+  pokemonName   String   @map("pokemon_name")
+  pokemonSprite String   @map("pokemon_sprite")
+  pokemonType   String   @map("pokemon_type")
+  rarity        String
+  difficulty    Int
+  description   String
+  pointsReward  Int      @map("points_reward")
+  caughtAt      DateTime @default(now()) @map("caught_at")
+  isCompanion   Boolean  @default(false) @map("is_companion")
+  
+  // Relations
+  user          User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  
+  @@unique([userId, pokemonId])
+  @@map("user_caught_pokemon")
+}

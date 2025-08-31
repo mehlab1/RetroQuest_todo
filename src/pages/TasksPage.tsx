@@ -5,6 +5,7 @@ import { tasksApi } from '../services/api';
 import { Plus, X, Edit3, Sparkles } from 'lucide-react';
 import TaskForm from '../components/TaskForm';
 import TaskTemplates from '../components/TaskTemplates';
+import soundEffects from '../utils/soundEffects';
 
 interface Task {
   taskId: number;
@@ -34,6 +35,7 @@ const TasksPage: React.FC = () => {
       setTasks(response.data);
     } catch (error) {
       console.error('Failed to load tasks:', error);
+      soundEffects.playError();
     } finally {
       setLoading(false);
     }
@@ -43,8 +45,10 @@ const TasksPage: React.FC = () => {
     try {
       if (editingTask) {
         await tasksApi.updateTask(editingTask.taskId, taskData);
+        soundEffects.playSave();
       } else {
         await tasksApi.createTask(taskData);
+        soundEffects.playItemPickup();
       }
       await loadTasks();
       await refreshUser();
@@ -52,6 +56,7 @@ const TasksPage: React.FC = () => {
       setEditingTask(null);
     } catch (error) {
       console.error('Failed to save task:', error);
+      soundEffects.playError();
     }
   };
 
@@ -60,8 +65,10 @@ const TasksPage: React.FC = () => {
       await tasksApi.createTask(template);
       await loadTasks();
       await refreshUser();
+      soundEffects.playItemPickup();
     } catch (error) {
       console.error('Failed to create task from template:', error);
+      soundEffects.playError();
     }
   };
 
@@ -71,6 +78,13 @@ const TasksPage: React.FC = () => {
       await loadTasks();
       const updatedUser = await refreshUser();
       
+      // Play appropriate sound based on task state
+      if (isDone) {
+        soundEffects.playMenuSelect(); // Unchecking
+      } else {
+        soundEffects.playTaskComplete(); // Completing
+      }
+      
       // Show achievement notifications based on user progress
       if (updatedUser?.gamification) {
         const { level, points, badges, streakCount } = updatedUser.gamification;
@@ -79,20 +93,24 @@ const TasksPage: React.FC = () => {
         if (badges.length > 0) {
           const latestBadge = badges[badges.length - 1];
           showAchievement(`Unlocked: ${latestBadge}`, 'badge');
+          soundEffects.playBadgeUnlock();
         }
         
         // Check for level up
         if (level > 1) {
           showAchievement(`Level Up! You're now level ${level}`, 'level');
+          soundEffects.playLevelUp();
         }
         
         // Check for streak milestones
         if (streakCount >= 7) {
           showAchievement(`🔥 ${streakCount} Day Streak!`, 'streak');
+          soundEffects.playStreakMilestone();
         }
       }
     } catch (error) {
       console.error('Failed to toggle task:', error);
+      soundEffects.playError();
     }
   };
 
@@ -101,8 +119,10 @@ const TasksPage: React.FC = () => {
       try {
         await tasksApi.deleteTask(taskId);
         await loadTasks();
+        soundEffects.playMenuCancel();
       } catch (error) {
         console.error('Failed to delete task:', error);
+        soundEffects.playError();
       }
     }
   };
@@ -110,6 +130,28 @@ const TasksPage: React.FC = () => {
   const startEdit = (task: Task) => {
     setEditingTask(task);
     setShowForm(true);
+    soundEffects.playMenuSelect();
+  };
+
+  const handleShowForm = () => {
+    setShowForm(true);
+    soundEffects.playMenuSelect();
+  };
+
+  const handleShowTemplates = () => {
+    setShowTemplates(true);
+    soundEffects.playMenuSelect();
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingTask(null);
+    soundEffects.playMenuCancel();
+  };
+
+  const handleCloseTemplates = () => {
+    setShowTemplates(false);
+    soundEffects.playMenuCancel();
   };
 
   const categories = [
@@ -154,14 +196,14 @@ const TasksPage: React.FC = () => {
 
         <div className="flex space-x-2">
           <button
-            onClick={() => setShowForm(true)}
+            onClick={handleShowForm}
             className="flex-1 bg-gameboy-light text-gameboy-dark font-pixel text-xs py-3 px-4 border-2 border-gameboy-lightest rounded flex items-center justify-center space-x-2 hover:bg-gameboy-lightest transition-colors duration-200"
           >
             <Plus size={12} />
             <span>NEW TASK</span>
           </button>
           <button
-            onClick={() => setShowTemplates(true)}
+            onClick={handleShowTemplates}
             className="bg-gameboy-medium text-gameboy-lightest font-pixel text-xs py-3 px-4 border-2 border-gameboy-border rounded flex items-center justify-center space-x-2 hover:bg-gameboy-light transition-colors duration-200"
           >
             <Sparkles size={12} />
@@ -175,10 +217,7 @@ const TasksPage: React.FC = () => {
         <TaskForm
           task={editingTask}
           onSubmit={handleTaskSubmit}
-          onCancel={() => {
-            setShowForm(false);
-            setEditingTask(null);
-          }}
+          onCancel={handleCloseForm}
           categories={categories}
         />
       )}
@@ -187,7 +226,7 @@ const TasksPage: React.FC = () => {
       {showTemplates && (
         <TaskTemplates
           onSelectTemplate={handleTemplateSelect}
-          onClose={() => setShowTemplates(false)}
+          onClose={handleCloseTemplates}
         />
       )}
 
@@ -208,7 +247,7 @@ const TasksPage: React.FC = () => {
             <div className="w-16 h-16 mx-auto mb-4 opacity-50">📝</div>
             <p className="font-pixel text-xs text-gameboy-light mb-4">No tasks yet</p>
             <button
-              onClick={() => setShowForm(true)}
+              onClick={handleShowForm}
               className="bg-gameboy-light text-gameboy-dark font-pixel text-xs py-2 px-4 border-2 border-gameboy-lightest rounded hover:bg-gameboy-lightest transition-colors"
             >
               Create First Task
