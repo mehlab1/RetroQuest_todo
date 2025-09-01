@@ -24,7 +24,13 @@ ChartJS.register(
 );
 
 interface HistoryData {
-  history: any[];
+  history: Array<{
+    taskId: number;
+    title: string;
+    isDone: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }>;
   chartData: Array<{
     date: string;
     completed: number;
@@ -59,7 +65,7 @@ const HistoryPage: React.FC = () => {
       ]);
       
       setHistoryData(historyResponse.data);
-      setWeeklyData(weeklyResponse.data);
+      setWeeklyData(weeklyResponse.data.weeklyData || []);
     } catch (error) {
       console.error('Failed to load history data:', error);
     } finally {
@@ -219,7 +225,7 @@ const HistoryPage: React.FC = () => {
       <div className="bg-gameboy-dark border-4 border-gameboy-border rounded-lg p-4">
         <h3 className="font-pixel text-xs text-gameboy-lightest mb-4">This Week</h3>
         <div className="grid grid-cols-7 gap-1">
-          {weeklyData.map((day, index) => {
+          {(weeklyData || []).map((day, index) => {
             const intensity = day.total > 0 ? day.completed / day.total : 0;
             return (
               <div key={index} className="text-center">

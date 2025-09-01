@@ -1,7 +1,7 @@
 class BackgroundMusic {
   private audio: HTMLAudioElement | null = null;
   private isPlaying: boolean = false;
-  private volume: number = 0.2; // Lower volume for theme music
+  private volume: number = 0.05; // Much lower volume for theme music
   private isMuted: boolean = false;
   private enabled: boolean = true;
 
@@ -128,12 +128,13 @@ class BackgroundMusic {
     return this.isPlaying;
   }
 
-  toggle() {
+  toggle(): boolean {
     if (this.isPlaying) {
       this.pause();
     } else {
       this.play();
     }
+    return this.isPlaying;
   }
 
   toggleMute() {
@@ -142,16 +143,6 @@ class BackgroundMusic {
     } else {
       this.mute();
     }
-  }
-
-  // Music state management
-  toggle(): boolean {
-    if (this.isPlaying) {
-      this.pause();
-    } else {
-      this.play();
-    }
-    return this.isPlaying;
   }
 
   isMusicEnabled(): boolean {

@@ -1,10 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAchievement } from '../contexts/AchievementContext';
 import { authApi, pokemonApi } from '../services/api';
 import soundEffects from '../utils/soundEffects';
 import { X, Star, Zap, Shield, Crown, Check } from 'lucide-react';
-import { CatchablePokemon } from '../data/catchablePokemon';
+
+interface CatchablePokemon {
+  id: number;
+  pokemonId: number;
+  name: string;
+  sprite: string;
+  type: string;
+  rarity: string;
+  difficulty: number;
+  description: string;
+  catchRequirement: string;
+  pointsReward: number;
+  isCompanion?: boolean;
+}
 
 interface MyPokemonsProps {
   onClose: () => void;
@@ -18,27 +31,28 @@ const MyPokemons: React.FC<MyPokemonsProps> = ({ onClose }) => {
   const [isSwitching, setIsSwitching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadCaughtPokemon();
-  }, [user]);
-
-  const loadCaughtPokemon = async () => {
+  const loadCaughtPokemon = useCallback(async () => {
     setIsLoading(true);
     try {
       // Load caught Pokemon from database
       const response = await pokemonApi.getCaughtPokemon();
-      let pokemonList = response.data.data || [];
+      const pokemonList = response.data.data || [];
       
       console.log(`✅ Loaded ${pokemonList.length} caught Pokemon from database`);
       
-      // Mark the current companion Pokemon
-      const pokemonWithCompanionStatus = pokemonList.map((pokemon: any) => ({
-        ...pokemon,
-        // Support both database and localStorage structure
-        name: pokemon.pokemonName || pokemon.name,
-        sprite: pokemon.pokemonSprite || pokemon.sprite,
-        type: pokemon.pokemonType || pokemon.type,
-        isCompanion: user?.pokemonPet?.name === (pokemon.pokemonName || pokemon.name)
+      // Transform the data to match our interface and mark the current companion Pokemon
+      const pokemonWithCompanionStatus = pokemonList.map((caught: any) => ({
+        id: caught.catchablePokemon.id,
+        pokemonId: caught.catchablePokemon.pokemonId,
+        name: caught.catchablePokemon.name,
+        sprite: caught.catchablePokemon.sprite,
+        type: caught.catchablePokemon.type,
+        rarity: caught.catchablePokemon.rarity,
+        difficulty: caught.catchablePokemon.difficulty,
+        description: caught.catchablePokemon.description,
+        catchRequirement: caught.catchablePokemon.catchRequirement,
+        pointsReward: caught.catchablePokemon.pointsReward,
+        isCompanion: user?.pokemonPet?.name === caught.catchablePokemon.name
       }));
       
       setCaughtPokemon(pokemonWithCompanionStatus);
@@ -53,7 +67,7 @@ const MyPokemons: React.FC<MyPokemonsProps> = ({ onClose }) => {
         if (stored) {
           const parsed = JSON.parse(stored);
           console.log(`📦 Fallback: Loaded ${parsed.length} Pokemon from localStorage`);
-          setCaughtPokemon(parsed.map((pokemon: any) => ({
+          setCaughtPokemon(parsed.map((pokemon: { name: string }) => ({
             ...pokemon,
             isCompanion: user?.pokemonPet?.name === pokemon.name
           })));
@@ -67,25 +81,20 @@ const MyPokemons: React.FC<MyPokemonsProps> = ({ onClose }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadCaughtPokemon();
+  }, [loadCaughtPokemon]);
 
   const switchCompanion = async (pokemon: CatchablePokemon) => {
     setIsSwitching(true);
     soundEffects.playMenuSelect();
     
     try {
-      // Simulate API call to switch companion Pokemon
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update the user's companion Pokemon
-      await authApi.updateProfile({ 
-        pokemonPet: {
-          name: pokemon.name,
-          spriteStage1: pokemon.sprite,
-          spriteStage2: pokemon.sprite,
-          spriteStage3: pokemon.sprite,
-          evolutionLevels: { stage2: 16, stage3: 32 }
-        }
+      // Update the user's companion Pokemon using the catchablePokemon ID
+      await usersApi.updateProfile({ 
+        pokemonPetId: pokemon.id
       });
       
       await refreshUser();
@@ -216,7 +225,7 @@ const MyPokemons: React.FC<MyPokemonsProps> = ({ onClose }) => {
                           className="w-full h-full object-contain"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '🎮';
+                            target.src = '🕹️';
                           }}
                         />
                       </div>
@@ -247,10 +256,10 @@ const MyPokemons: React.FC<MyPokemonsProps> = ({ onClose }) => {
               </div>
             ) : (
               <div className="text-center py-6 sm:py-8">
-                <div className="nes-avatar is-large mx-auto mb-3 sm:mb-4 opacity-50">🎮</div>
+                <div className="nes-avatar is-large mx-auto mb-3 sm:mb-4 opacity-50">🕹️</div>
                 <p className="font-pixel text-xs text-gameboy-light">No Pokemon caught yet</p>
                 <p className="font-pixel text-xs text-gameboy-light mt-1">Complete tasks to catch Pokemon!</p>
-                <p className="font-pixel text-xs text-gameboy-light mt-2">Click the 🎮 button to see available Pokemon</p>
+                                  <p className="font-pixel text-xs text-gameboy-light mt-2">Click the 🕹️ button to see available Pokemon</p>
               </div>
             )}
           </div>

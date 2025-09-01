@@ -39,20 +39,77 @@ router.put('/profile', authenticateToken, async (req, res) => {
   try {
     const { username, pokemonPetId } = req.body;
 
-    const user = await prisma.user.update({
-      where: { userId: req.user.userId },
-      data: {
-        username,
-        pokemonPetId: pokemonPetId ? parseInt(pokemonPetId) : undefined
-      },
-      include: {
-        pokemonPet: true,
-        gamification: true
-      }
-    });
+    // If pokemonPetId is provided, we need to handle Pokemon companion switching
+    if (pokemonPetId) {
+      // First, find the catchable Pokemon
+      const catchablePokemon = await prisma.catchable_pokemon.findUnique({
+        where: { id: parseInt(pokemonPetId) }
+      });
 
-    const { password: _, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+      if (!catchablePokemon) {
+        return res.status(404).json({ error: 'Pokemon not found' });
+      }
+
+      // Check if user has caught this Pokemon
+      const userCaughtPokemon = await prisma.userCaughtPokemon.findFirst({
+        where: {
+          userId: req.user.userId,
+          catchable_pokemon_id: parseInt(pokemonPetId)
+        }
+      });
+
+      if (!userCaughtPokemon) {
+        return res.status(400).json({ error: 'You must catch this Pokemon first' });
+      }
+
+      // Find or create PokemonPet record
+      let pokemonPet = await prisma.pokemonPet.findFirst({
+        where: { name: catchablePokemon.name }
+      });
+
+      if (!pokemonPet) {
+        pokemonPet = await prisma.pokemonPet.create({
+          data: {
+            name: catchablePokemon.name,
+            spriteStage1: catchablePokemon.sprite,
+            spriteStage2: catchablePokemon.sprite,
+            spriteStage3: catchablePokemon.sprite,
+            description: catchablePokemon.description,
+            evolution_levels: { stage2: 16, stage3: 32 },
+            type: catchablePokemon.type
+          }
+        });
+      }
+
+      // Update user with new PokemonPet
+      const user = await prisma.user.update({
+        where: { userId: req.user.userId },
+        data: {
+          username,
+          pokemonPetId: pokemonPet.petId
+        },
+        include: {
+          pokemonPet: true,
+          gamification: true
+        }
+      });
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } else {
+      // Just update username
+      const user = await prisma.user.update({
+        where: { userId: req.user.userId },
+        data: { username },
+        include: {
+          pokemonPet: true,
+          gamification: true
+        }
+      });
+
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    }
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile' });

@@ -18,7 +18,7 @@ const LandingPage: React.FC = () => {
         <div className="p-6 text-center">
           <div className="mb-6">
             <div className="w-24 h-24 mx-auto bg-gameboy-light border-4 border-gameboy-lightest rounded-lg mb-4 flex items-center justify-center animate-float">
-              <span className="text-4xl">🎮</span>
+              <span className="text-4xl">🕹️</span>
             </div>
             <h2 className="font-pixel text-sm text-gameboy-lightest mb-2">
               Level Up Your Life!

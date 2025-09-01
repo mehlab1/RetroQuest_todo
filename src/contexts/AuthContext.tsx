@@ -80,16 +80,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await authApi.login(email, password);
-      const { user, token } = response.data;
-      
-      localStorage.setItem('token', token);
-      authApi.setToken(token);
-      setUser(user);
-    } catch (error) {
-      throw error;
-    }
+    const response = await authApi.login(email, password);
+    const { user, token } = response.data;
+    
+    localStorage.setItem('token', token);
+    authApi.setToken(token);
+    setUser(user);
   };
 
   const loginWithToken = (token: string, user: User) => {
@@ -99,16 +95,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const register = async (email: string, username: string, password: string, pokemon: Pokemon) => {
-    try {
-      const response = await authApi.register(email, username, password, pokemon);
-      const { user, token } = response.data;
-      
-      localStorage.setItem('token', token);
-      authApi.setToken(token);
-      setUser(user);
-    } catch (error) {
-      throw error;
-    }
+    const response = await authApi.register(email, username, password, pokemon);
+    const { user, token } = response.data;
+    
+    localStorage.setItem('token', token);
+    authApi.setToken(token);
+    setUser(user);
   };
 
   const logout = () => {

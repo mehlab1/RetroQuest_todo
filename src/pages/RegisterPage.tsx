@@ -3,7 +3,19 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useAchievement } from '../contexts/AchievementContext';
 import PokemonSelector from '../components/PokemonSelector';
-import { Pokemon } from '../data/pokemon';
+interface Pokemon {
+  petId: number;
+  name: string;
+  spriteStage1: string;
+  spriteStage2: string;
+  spriteStage3: string;
+  type: string;
+  description: string;
+  evolutionLevels: {
+    stage2: number;
+    stage3: number;
+  };
+}
 import soundEffects from '../utils/soundEffects';
 
 const RegisterPage: React.FC = () => {
@@ -99,11 +111,12 @@ const RegisterPage: React.FC = () => {
       case 'username':
         setValidation(prev => ({ ...prev, username: validateUsername(value) }));
         break;
-      case 'password':
+      case 'password': {
         const strength = checkPasswordStrength(value);
         setPasswordStrength(strength);
         setValidation(prev => ({ ...prev, password: strength.score >= 3 }));
         break;
+      }
       case 'confirmPassword':
         setValidation(prev => ({ ...prev, confirmPassword: value === formData.password }));
         break;
@@ -165,7 +178,7 @@ const RegisterPage: React.FC = () => {
       showAchievement(`Welcome to RetroQuest, ${formData.username}!`, 'pokemon');
       soundEffects.playVictory();
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (error: { response?: { data?: { message?: string } } }) {
       setError(error.response?.data?.message || 'Registration failed. Please try again.');
       soundEffects.playError();
     } finally {

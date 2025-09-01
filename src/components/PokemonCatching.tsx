@@ -1,9 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { catchablePokemon, CatchablePokemon } from '../data/catchablePokemon';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAchievement } from '../contexts/AchievementContext';
 import { tasksApi, pokemonApi } from '../services/api';
 import soundEffects from '../utils/soundEffects';
+
+interface CatchablePokemon {
+  id: number;
+  pokemonId: number;
+  name: string;
+  sprite: string;
+  type: string;
+  rarity: string;
+  difficulty: number;
+  description: string;
+  catchRequirement: string;
+  pointsReward: number;
+}
 
 interface PokemonCatchingProps {
   onClose: () => void;
@@ -18,76 +30,64 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
   const [isCatching, setIsCatching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    initializePokemonData();
-  }, [user]);
-
-  const loadCaughtPokemon = async () => {
+  const loadCaughtPokemon = useCallback(async () => {
     try {
-      // Load from database instead of localStorage
+      // Load from database with the new structure
       const response = await pokemonApi.getCaughtPokemon();
       const caughtList = response.data.data || [];
-      setCaughtPokemon(caughtList);
-      console.log(`✅ Loaded ${caughtList.length} caught Pokemon from database`);
-      return caughtList;
+      
+      // Transform the data to match our interface
+      const transformedCaughtList = caughtList.map((caught: any) => ({
+        id: caught.catchablePokemon.id,
+        pokemonId: caught.catchablePokemon.pokemonId,
+        name: caught.catchablePokemon.name,
+        sprite: caught.catchablePokemon.sprite,
+        type: caught.catchablePokemon.type,
+        rarity: caught.catchablePokemon.rarity,
+        difficulty: caught.catchablePokemon.difficulty,
+        description: caught.catchablePokemon.description,
+        catchRequirement: caught.catchablePokemon.catchRequirement,
+        pointsReward: caught.catchablePokemon.pointsReward
+      }));
+      
+      setCaughtPokemon(transformedCaughtList);
+      console.log(`✅ Loaded ${transformedCaughtList.length} caught Pokemon from database`);
+      return transformedCaughtList;
     } catch (error) {
       console.error('Failed to load caught Pokemon:', error);
-      // Fallback to localStorage for migration
-      try {
-        const stored = localStorage.getItem(`caughtPokemon_${user?.userId}`);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          console.log(`📦 Loaded ${parsed.length} Pokemon from localStorage (migration needed)`);
-          return parsed;
-        }
-      } catch (localError) {
-        console.error('LocalStorage fallback failed:', localError);
-      }
       return [];
     }
-  };
+  }, []);
 
-  const initializePokemonData = async () => {
-    setIsLoading(true);
-    try {
-      // First load caught Pokemon (now async)
-      const caught = await loadCaughtPokemon();
-      
-      // Then check available Pokemon
-      await checkAvailablePokemon(caught);
-    } catch (error) {
-      console.error('Failed to initialize Pokemon data:', error);
-      soundEffects.playError();
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const checkAvailablePokemon = async (caughtPokemonList: CatchablePokemon[] = []) => {
+  const checkAvailablePokemon = useCallback(async (caughtPokemonList: CatchablePokemon[] = []) => {
     try {
       // Get user's task statistics
       const tasksResponse = await tasksApi.getTasks();
       const allTasks = tasksResponse.data;
-      const completedTasks = allTasks.filter((task: any) => task.isDone);
+      const completedTasks = allTasks.filter((task: { isDone: boolean }) => task.isDone);
       
       // Calculate user stats
       const totalTasks = allTasks.length;
-      const completedToday = allTasks.filter((task: any) => {
+      const completedToday = allTasks.filter((task: { isDone: boolean; updatedAt: string }) => {
         const today = new Date().toDateString();
         const taskDate = new Date(task.updatedAt).toDateString();
         return task.isDone && taskDate === today;
       }).length;
       
-      const highPriorityTasks = completedTasks.filter((task: any) => task.priority === 'High').length;
+      const highPriorityTasks = completedTasks.filter((task: { priority: string }) => task.priority === 'High').length;
       const streakCount = user?.gamification?.streakCount || 0;
       const userLevel = user?.level || 1;
 
+      // Fetch catchable Pokemon from database
+      const catchableResponse = await pokemonApi.getCatchablePokemon();
+      const allCatchablePokemon = catchableResponse.data.data || [];
+
       // Check which Pokemon are available based on achievements
-      const available = catchablePokemon.filter(pokemon => {
+      const available = allCatchablePokemon.filter((pokemon: CatchablePokemon) => {
         // Don't show Pokemon that are already caught
         const alreadyCaught = caughtPokemonList.some(caught => 
-          (caught.pokemonId || caught.id) === pokemon.id || 
-          (caught.pokemonName || caught.name) === pokemon.name
+          caught.id === pokemon.id || 
+          caught.name === pokemon.name
         );
         if (alreadyCaught) {
           console.log(`Filtering out ${pokemon.name} - already caught`);
@@ -119,6 +119,76 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
             return streakCount >= 7; // Simplified for demo
           case 'Rayquaza':
             return userLevel >= 50 && totalTasks >= 200;
+          // Common Pokemon
+          case 'Weedle':
+            return completedTasks.length >= 1;
+          case 'Spearow':
+            return completedTasks.length >= 3;
+          case 'Nidoran♀':
+            return completedToday >= 2;
+          case 'Nidoran♂':
+            return completedToday >= 2;
+          case 'Vulpix':
+            return completedTasks.length >= 4;
+          case 'Zubat':
+            return completedTasks.length >= 3;
+          case 'Oddish':
+            return completedTasks.length >= 2;
+          case 'Magikarp':
+            return completedTasks.length >= 1;
+          // Uncommon Pokemon
+          case 'Abra':
+            return completedTasks.length >= 5;
+          case 'Ponyta':
+            return completedTasks.length >= 5;
+          case 'Magnemite':
+            return completedTasks.length >= 5;
+          case 'Clefairy':
+            return completedTasks.length >= 6;
+          case 'Jigglypuff':
+            return completedTasks.length >= 5;
+          case 'Growlithe':
+            return completedTasks.length >= 6;
+          // Rare Pokemon
+          case 'Chansey':
+            return completedTasks.length >= 8;
+          case 'Kangaskhan':
+            return completedTasks.length >= 8;
+          case 'Lapras':
+            return completedTasks.length >= 12;
+          case 'Mr. Mime':
+            return completedTasks.length >= 10;
+          case 'Scyther':
+            return completedTasks.length >= 10;
+          case 'Jynx':
+            return completedTasks.length >= 10;
+          case 'Electabuzz':
+            return completedTasks.length >= 10;
+          case 'Magmar':
+            return completedTasks.length >= 10;
+          case 'Pinsir':
+            return completedTasks.length >= 10;
+          case 'Tauros':
+            return completedTasks.length >= 10;
+          case 'Eevee':
+            return completedTasks.length >= 12;
+          case 'Jolteon':
+            return completedTasks.length >= 12;
+          case 'Flareon':
+            return completedTasks.length >= 12;
+          // Legendary Pokemon
+          case 'Articuno':
+            return completedTasks.length >= 20;
+          case 'Zapdos':
+            return completedTasks.length >= 20;
+          case 'Moltres':
+            return completedTasks.length >= 20;
+          case 'Snorlax':
+            return completedTasks.length >= 15;
+          case 'Dratini':
+            return completedTasks.length >= 18;
+          case 'Dragonite':
+            return completedTasks.length >= 20;
           default:
             return false;
         }
@@ -129,7 +199,29 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
     } catch (error) {
       console.error('Failed to check available Pokemon:', error);
     }
-  };
+  }, [user]);
+
+  const initializePokemonData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      // First load caught Pokemon (now async)
+      const caught = await loadCaughtPokemon();
+      
+      // Then check available Pokemon
+      await checkAvailablePokemon(caught);
+    } catch (error) {
+      console.error('Failed to initialize Pokemon data:', error);
+      soundEffects.playError();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadCaughtPokemon, checkAvailablePokemon]);
+
+  useEffect(() => {
+    initializePokemonData();
+  }, [initializePokemonData]);
+
+
 
   const catchPokemon = async (pokemon: CatchablePokemon) => {
     setIsCatching(true);
@@ -140,16 +232,9 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
     // Reduced catching time for better UX (800ms instead of 2000ms)
     setTimeout(async () => {
       try {
-        // 📱 Save to database instead of localStorage
+        // 📱 Save to database using the new structure
         const pokemonData = {
-          pokemonId: pokemon.id,
-          pokemonName: pokemon.name,
-          pokemonSprite: pokemon.sprite,
-          pokemonType: pokemon.type,
-          rarity: pokemon.rarity,
-          difficulty: pokemon.difficulty,
-          description: pokemon.description,
-          pointsReward: pokemon.pointsReward
+          catchablePokemonId: pokemon.id
         };
 
         const response = await pokemonApi.catchPokemon(pokemonData);
@@ -158,8 +243,22 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
           // 🎵 Success sound effect
           soundEffects.playPokemonSuccess();
           
+          // Transform the caught Pokemon data to match our interface
+          const caughtPokemonData = {
+            id: response.data.data.catchablePokemon.id,
+            pokemonId: response.data.data.catchablePokemon.pokemonId,
+            name: response.data.data.catchablePokemon.name,
+            sprite: response.data.data.catchablePokemon.sprite,
+            type: response.data.data.catchablePokemon.type,
+            rarity: response.data.data.catchablePokemon.rarity,
+            difficulty: response.data.data.catchablePokemon.difficulty,
+            description: response.data.data.catchablePokemon.description,
+            catchRequirement: response.data.data.catchablePokemon.catchRequirement,
+            pointsReward: response.data.data.catchablePokemon.pointsReward
+          };
+          
           // Update local state
-          const newCaughtPokemon = [...caughtPokemon, response.data.data];
+          const newCaughtPokemon = [...caughtPokemon, caughtPokemonData];
           setCaughtPokemon(newCaughtPokemon);
           
           // Remove from available Pokemon immediately
@@ -270,7 +369,7 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
                           className="w-full h-full object-contain"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '🎮';
+                            target.src = '🕹️';
                           }}
                         />
                       </div>
@@ -290,7 +389,7 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
               </div>
             ) : (
               <div className="text-center py-6 sm:py-8">
-                <div className="nes-avatar is-large mx-auto mb-3 sm:mb-4 opacity-50">🎮</div>
+                <div className="nes-avatar is-large mx-auto mb-3 sm:mb-4 opacity-50">🕹️</div>
                 <p className="font-pixel text-xs text-gameboy-light">No Pokemon available</p>
                 <p className="font-pixel text-xs text-gameboy-light mt-1">Complete more tasks to unlock Pokemon!</p>
               </div>
@@ -307,10 +406,10 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
                     src={selectedPokemon.sprite}
                     alt={selectedPokemon.name}
                     className="w-full h-full object-contain"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = '🎮';
-                    }}
+                                              onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '🕹️';
+                          }}
                   />
                 </div>
                 <div className="flex-1 text-center sm:text-left">
@@ -349,15 +448,15 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
                 {caughtPokemon.map((pokemon) => (
                   <div key={pokemon.id} className="nes-container is-rounded text-center mobile-p-2 sm:mobile-p-3">
                     <div className="nes-avatar is-small is-rounded mx-auto mb-1 sm:mb-2">
-                      <img
-                        src={pokemon.sprite}
-                        alt={pokemon.name}
-                        className="w-full h-full object-contain"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '🎮';
-                        }}
-                      />
+                                              <img
+                          src={pokemon.sprite}
+                          alt={pokemon.name}
+                          className="w-full h-full object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = '🕹️';
+                          }}
+                        />
                     </div>
                     <p className="font-pixel text-xs text-gameboy-dark truncate">{pokemon.name}</p>
                   </div>

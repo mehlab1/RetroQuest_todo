@@ -1,5 +1,18 @@
 import axios from 'axios';
-import { Pokemon } from '../data/pokemon';
+
+interface Pokemon {
+  petId: number;
+  name: string;
+  spriteStage1: string;
+  spriteStage2: string;
+  spriteStage3: string;
+  type: string;
+  description: string;
+  evolutionLevels: {
+    stage2: number;
+    stage3: number;
+  };
+}
 
 // Use relative URL for production, fallback to localhost for development
 const API_BASE_URL = import.meta.env.PROD ? '/api' : (import.meta.env.VITE_API_URL || 'http://localhost:3001/api');
@@ -36,7 +49,7 @@ export const authApi = {
 
   logout: () => api.post('/auth/logout'),
   getProfile: () => api.get('/auth/profile'),
-  updateProfile: (data: any) => api.put('/auth/profile', data),
+  updateProfile: (data: { pokemonPet?: { name: string; spriteStage1: string; spriteStage2: string; spriteStage3: string; evolutionLevels?: { stage2: number; stage3: number } } }) => api.put('/auth/profile', data),
   googleAuth: () => api.get('/auth/google'),
 };
 
@@ -46,13 +59,14 @@ export const tasksApi = {
   getTodayTasks: () => api.get('/tasks/today'),
   createTask: (task: { title: string; description?: string; category?: string }) =>
     api.post('/tasks', task),
-  updateTask: (id: number, task: any) => api.put(`/tasks/${id}`, task),
+  updateTask: (id: number, task: { title?: string; description?: string; category?: string; isDone?: boolean }) => api.put(`/tasks/${id}`, task),
   deleteTask: (id: number) => api.delete(`/tasks/${id}`),
 };
 
 // Users API
 export const usersApi = {
-  getProfile: () => api.get('/users/profile')
+  getProfile: () => api.get('/users/profile'),
+  updateProfile: (data: { pokemonPetId?: number; username?: string }) => api.put('/users/profile', data)
 };
 
 // Quests API
@@ -74,11 +88,16 @@ export const historyApi = {
 
 // Pokemon API
 export const pokemonApi = {
-  getAllPokemon: () => api.get('/pokemon'),
+  getAvailablePokemon: () => api.get('/pokemon/available'),
+  getCatchablePokemon: () => api.get('/pokemon/catchable'),
   getPokemonById: (id: number) => api.get(`/pokemon/${id}`),
   getCaughtPokemon: () => api.get('/pokemon/caught/my'),
-  catchPokemon: (pokemonData: any) => api.post('/pokemon/catch', pokemonData),
+  catchPokemon: (pokemonData: { catchablePokemonId: number }) => api.post('/pokemon/catch', pokemonData),
   releasePokemon: (pokemonId: number) => api.delete(`/pokemon/release/${pokemonId}`),
+  // Add sprite serving endpoints
+  getPetSprite: (id: number, stage: number) => `${api.defaults.baseURL}/pokemon/sprite/pet/${id}/${stage}`,
+  getCatchableSprite: (id: number) => `${api.defaults.baseURL}/pokemon/sprite/catchable/${id}`,
+  getPokemonGif: (id: number) => `${api.defaults.baseURL}/pokemon/gif/${id}`,
 };
 
 export default api;

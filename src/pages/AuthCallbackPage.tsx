@@ -50,7 +50,7 @@ const AuthCallbackPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gameboy-dark flex items-center justify-center">
       <div className="text-center">
-        <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🎮</div>
+        <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🕹️</div>
         <p className="font-pixel text-sm text-gameboy-lightest">Connecting to RetroQuest...</p>
         <div className="mt-4 w-8 h-8 mx-auto border-4 border-gameboy-light border-t-transparent rounded-full animate-spin"></div>
       </div>

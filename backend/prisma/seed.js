@@ -53,31 +53,8 @@ async function main() {
 
   // Demo users removed for security - only Google OAuth registration allowed
 
-  // Create sample tasks
-  const tasks = [
-    { title: 'Catch 5 Pokémon', category: 'Training', userId: ashUser.userId },
-    { title: 'Practice battle moves', category: 'Training', userId: ashUser.userId },
-    { title: 'Visit Pokémon Center', category: 'Health', userId: ashUser.userId },
-    { title: 'Train water-type moves', category: 'Training', userId: mistyUser.userId },
-    { title: 'Clean the Gym', category: 'Chores', userId: mistyUser.userId },
-    { title: 'Study Pokémon types', category: 'Learning', userId: mistyUser.userId }
-  ];
-
-  for (const taskData of tasks) {
-    await prisma.task.create({
-      data: taskData
-    });
-  }
-
-  // Create daily quests
-  await prisma.dailyQuest.createMany({
-    data: [
-      { userId: ashUser.userId, title: 'Complete 3 tasks', points: 25 },
-      { userId: ashUser.userId, title: 'Focus for 25 minutes', points: 30 },
-      { userId: mistyUser.userId, title: 'Exercise for 15 minutes', points: 20 },
-      { userId: mistyUser.userId, title: 'Read for 10 minutes', points: 15 }
-    ]
-  });
+  // Sample tasks and quests will be created by actual users
+  console.log('📝 Sample data will be created by users during registration');
 
   // Create some task history for charts
   const yesterday = new Date();

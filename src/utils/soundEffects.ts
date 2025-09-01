@@ -11,8 +11,8 @@ class SoundEffects {
 
   private initAudioContext() {
     try {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (error) {
+      this.audioContext = new (window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+    } catch {
       console.warn('Web Audio API not supported');
     }
   }

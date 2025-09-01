@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { Zap, Trophy, Heart, Target } from 'lucide-react';
-import soundEffects from '../utils/soundEffects';
+import { Zap, Trophy } from 'lucide-react';
 
 const ProfilePage: React.FC = () => {
-  const { user, refreshUser } = useAuth();
+  const { user } = useAuth();
 
   const getCurrentSprite = () => {
-    if (!user?.pokemonPet) return '🎮';
+    if (!user?.pokemonPet) return '🕹️';
     
     const { level } = user;
     const evolutionLevels = user.pokemonPet.evolutionLevels || { stage2: 16, stage3: 32 };
@@ -40,7 +39,7 @@ const ProfilePage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gameboy-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🎮</div>
+          <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🕹️</div>
           <p className="font-pixel text-sm text-gameboy-lightest">Loading Trainer Card...</p>
         </div>
       </div>
@@ -63,7 +62,7 @@ const ProfilePage: React.FC = () => {
               className="w-16 h-16 object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = '🎮'; // Fallback emoji
+                target.src = '🕹️'; // Fallback emoji
               }}
             />
           </div>

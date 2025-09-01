@@ -61,7 +61,7 @@ const DashboardPage: React.FC = () => {
       
       // Show achievement notifications
       if (updatedUser?.gamification) {
-        const { level, points, badges, streakCount } = updatedUser.gamification;
+        const { level, badges, streakCount } = updatedUser.gamification;
         
         // Check for new badges
         if (badges.length > 0) {
@@ -89,7 +89,7 @@ const DashboardPage: React.FC = () => {
   };
 
   const getCurrentSprite = () => {
-    if (!user?.pokemonPet) return '🎮';
+    if (!user?.pokemonPet) return '🕹️';
     
     const { level } = user;
     const evolutionLevels = user.pokemonPet.evolutionLevels || { stage2: 16, stage3: 32 };
@@ -107,7 +107,7 @@ const DashboardPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-gameboy-dark flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🎮</div>
+          <div className="w-16 h-16 mx-auto mb-4 animate-pulse">🕹️</div>
           <p className="font-pixel text-sm text-gameboy-lightest">Loading RetroQuest...</p>
         </div>
       </div>
@@ -130,7 +130,7 @@ const DashboardPage: React.FC = () => {
               className="w-16 h-16 object-contain"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = '🎮'; // Fallback emoji
+                target.src = '🕹️'; // Fallback emoji
               }}
             />
           </div>

@@ -1,6 +1,20 @@
-import React, { useState } from 'react';
-import { pokemonList, Pokemon } from '../data/pokemon';
+import React, { useState, useEffect } from 'react';
+import { pokemonApi } from '../services/api';
 import soundEffects from '../utils/soundEffects';
+
+interface Pokemon {
+  petId: number;
+  name: string;
+  spriteStage1: string;
+  spriteStage2: string;
+  spriteStage3: string;
+  type: string;
+  description: string;
+  evolutionLevels: {
+    stage2: number;
+    stage3: number;
+  };
+}
 
 interface PokemonSelectorProps {
   onSelect: (pokemon: Pokemon) => void;
@@ -9,6 +23,26 @@ interface PokemonSelectorProps {
 
 const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPokemon }) => {
   const [hoveredPokemon, setHoveredPokemon] = useState<Pokemon | null>(null);
+  const [pokemonList, setPokemonList] = useState<Pokemon[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchPokemon = async () => {
+      try {
+        setLoading(true);
+        const response = await pokemonApi.getAvailablePokemon();
+        setPokemonList(response.data.data || []);
+      } catch (err) {
+        console.error('Failed to fetch Pokemon:', err);
+        setError('Failed to load Pokemon data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPokemon();
+  }, []);
 
   const handlePokemonSelect = (pokemon: Pokemon) => {
     soundEffects.playItemPickup();
@@ -22,21 +56,6 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
     }
   };
 
-  const getTypeColor = (type: string) => {
-    const typeColors: { [key: string]: string } = {
-      'Grass': 'bg-green-500',
-      'Fire': 'bg-red-500',
-      'Water': 'bg-blue-500',
-      'Electric': 'bg-yellow-500',
-      'Normal': 'bg-gray-500',
-      'Poison': 'bg-purple-500',
-      'Flying': 'bg-indigo-500'
-    };
-
-    const primaryType = type.split('/')[0];
-    return typeColors[primaryType] || 'bg-gray-500';
-  };
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -44,54 +63,70 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
         <p className="font-pixel text-xs text-gameboy-light">Select your companion for this adventure</p>
       </div>
 
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="font-pixel text-sm text-gameboy-lightest">Loading Pokemon...</div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="text-center py-8">
+          <div className="font-pixel text-sm text-gameboy-lightest text-red-400">{error}</div>
+        </div>
+      )}
+
       {/* Pokemon Grid */}
-      <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto">
-        {pokemonList.map((pokemon) => (
-          <div
-            key={pokemon.id}
-            className={`relative cursor-pointer transition-all duration-200 ${
-              selectedPokemon?.id === pokemon.id
-                ? 'scale-110 border-2 border-gameboy-light bg-gameboy-light'
-                : 'border-2 border-gameboy-border bg-gameboy-medium hover:border-gameboy-light hover:scale-105'
-            } rounded-lg p-3`}
-            onClick={() => handlePokemonSelect(pokemon)}
-            onMouseEnter={() => handlePokemonHover(pokemon)}
-            onMouseLeave={() => handlePokemonHover(null)}
-          >
-            {/* Pokemon Sprite */}
-            <div className="flex justify-center mb-2">
-              <img
-                src={pokemon.spriteStage1}
-                alt={pokemon.name}
-                className="w-16 h-16 object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '🎮'; // Fallback emoji
-                }}
-              />
-            </div>
-
-            {/* Pokemon Name */}
-            <div className="text-center">
-              <p className="font-pixel text-xs text-gameboy-lightest mb-1">{pokemon.name}</p>
-              
-              {/* Type Badge */}
-              <div className="flex justify-center">
-                <span className={`${getTypeColor(pokemon.type)} text-white font-pixel text-xs px-2 py-1 rounded`}>
-                  {pokemon.type.split('/')[0]}
-                </span>
+      {!loading && !error && (
+        <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto">
+          {pokemonList.map((pokemon) => (
+            <div
+              key={pokemon.petId}
+              className={`relative cursor-pointer transition-all duration-200 ${
+                selectedPokemon?.petId === pokemon.petId
+                  ? 'scale-110 border-2 border-gameboy-light bg-gameboy-light'
+                  : 'border-2 border-gameboy-border bg-gameboy-medium hover:border-gameboy-light hover:scale-105'
+              } rounded-lg p-3`}
+              onClick={() => handlePokemonSelect(pokemon)}
+              onMouseEnter={() => handlePokemonHover(pokemon)}
+              onMouseLeave={() => handlePokemonHover(null)}
+            >
+              {/* Pokemon Sprite */}
+              <div className="flex justify-center mb-2">
+                <img
+                  src={pokemon.spriteStage1}
+                  alt={pokemon.name}
+                  className="w-16 h-16 object-contain"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '🕹️'; // Fallback emoji
+                  }}
+                />
               </div>
-            </div>
 
-            {/* Selection Indicator */}
-            {selectedPokemon?.id === pokemon.id && (
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-gameboy-light border-2 border-gameboy-lightest rounded-full flex items-center justify-center">
-                <span className="font-pixel text-xs text-gameboy-dark">✓</span>
+              {/* Pokemon Name */}
+              <div className="text-center">
+                <p className="font-pixel text-xs text-gameboy-lightest mb-1">{pokemon.name}</p>
+                
+                {/* Type Badge */}
+                <div className="flex justify-center">
+                  <span className="bg-blue-500 text-white font-pixel text-xs px-2 py-1 rounded">
+                    {pokemon.type}
+                  </span>
+                </div>
               </div>
-            )}
-          </div>
-        ))}
-      </div>
+
+              {/* Selection Indicator */}
+              {selectedPokemon?.petId === pokemon.petId && (
+                <div className="absolute -top-2 -right-2 w-6 h-6 bg-gameboy-light border-2 border-gameboy-lightest rounded-full flex items-center justify-center">
+                  <span className="font-pixel text-xs text-gameboy-dark">✓</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Pokemon Details */}
       {(hoveredPokemon || selectedPokemon) && (
@@ -105,7 +140,7 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
                 className="w-20 h-20 object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '🎮'; // Fallback emoji
+                  target.src = '🕹️'; // Fallback emoji
                 }}
               />
             </div>
@@ -117,7 +152,7 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
               </h4>
               
               <div className="flex items-center space-x-2 mb-2">
-                <span className={`${getTypeColor((hoveredPokemon || selectedPokemon)?.type || '')} text-white font-pixel text-xs px-2 py-1 rounded`}>
+                <span className="bg-blue-500 text-white font-pixel text-xs px-2 py-1 rounded">
                   {(hoveredPokemon || selectedPokemon)?.type}
                 </span>
               </div>
@@ -129,7 +164,7 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
               {/* Evolution Info */}
               <div className="mt-3 pt-3 border-t border-gameboy-border">
                 <p className="font-pixel text-xs text-gameboy-light">
-                  Evolves at Level {(hoveredPokemon || selectedPokemon)?.evolutionLevels.stage2} → Level {(hoveredPokemon || selectedPokemon)?.evolutionLevels.stage3}
+                  This Pokemon has multiple evolution stages and will become stronger as you level up!
                 </p>
               </div>
             </div>

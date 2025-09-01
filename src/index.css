@@ -1161,6 +1161,26 @@ body {
   min-height: 60px;
 }
 
+/* Notification positioning - ensure it appears above header */
+.notification-container {
+  position: fixed;
+  top: 80px; /* Below the header */
+  right: 16px;
+  z-index: 1003; /* Higher than header */
+  max-width: 320px;
+  pointer-events: auto;
+}
+
+/* Achievement toast positioning */
+.achievement-toast {
+  position: fixed;
+  top: 80px; /* Below the header */
+  right: 16px;
+  z-index: 1003; /* Higher than header */
+  max-width: 320px;
+  pointer-events: auto;
+}
+
 .mobile-header-content {
   display: flex;
   align-items: center;
@@ -1566,5 +1586,118 @@ body {
   font-size: 8px;
   color: var(--gameboy-light);
   margin-top: 2px;
+}
+
+/* Retro pixelated icons */
+.mobile-menu-icon {
+  font-size: 16px;
+  min-width: 20px;
+  text-align: center;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Custom retro pokeball icon */
+.pokeball-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(
+    to bottom,
+    #ff0000 0%,
+    #ff0000 45%,
+    #ffffff 45%,
+    #ffffff 55%,
+    #ff0000 55%,
+    #ff0000 100%
+  );
+  border: 2px solid #000000;
+  border-radius: 50%;
+  position: relative;
+}
+
+.pokeball-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  background: #ffffff;
+  border: 1px solid #000000;
+  border-radius: 50%;
+}
+
+/* Custom retro collection box icon */
+.collection-box-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background: #8b4513;
+  border: 2px solid #654321;
+  border-radius: 2px;
+  position: relative;
+}
+
+.collection-box-icon::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  height: 2px;
+  background: #654321;
+}
+
+.collection-box-icon::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 2px;
+  right: 2px;
+  height: 2px;
+  background: #654321;
+}
+
+/* Pokemon Sprite Animations */
+@keyframes pokemon-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pokemon-glow {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)); }
+}
+
+@keyframes pokemon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.pokemon-sprite-hover {
+  transition: all 0.3s ease;
+}
+
+.pokemon-sprite-hover:hover {
+  animation: pokemon-bounce 0.6s ease-in-out;
+  filter: brightness(1.2) contrast(1.1);
+}
+
+.pokemon-sprite-legendary {
+  animation: pokemon-glow 2s ease-in-out infinite;
+}
+
+.pokemon-sprite-evolving {
+  animation: pokemon-spin 1s ease-in-out;
+}
+
+/* Pixelated rendering for sprites */
+.pokemon-sprite {
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 

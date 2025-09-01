@@ -17,7 +17,7 @@ export const dailyReset = async () => {
     today.setHours(0, 0, 0, 0);
 
     for (const user of users) {
-      // Archive completed tasks to history
+      // Archive ALL tasks (both done and undone) to history
       for (const task of user.tasks) {
         await prisma.taskHistory.create({
           data: {
@@ -30,13 +30,14 @@ export const dailyReset = async () => {
         });
       }
 
-      // Reset all tasks to undone
-      await prisma.task.updateMany({
-        where: { userId: user.userId },
-        data: {
-          isDone: false,
-          updatedAt: new Date()
-        }
+      // DELETE all old tasks (not just reset them)
+      await prisma.task.deleteMany({
+        where: { userId: user.userId }
+      });
+
+      // Clear old daily quests
+      await prisma.dailyQuest.deleteMany({
+        where: { userId: user.userId }
       });
 
       // Generate new daily quests
@@ -54,7 +55,8 @@ export const dailyReset = async () => {
         data: {
           userId: user.userId,
           title: randomQuest,
-          points: 25
+          points: 25,
+          isCompleted: false
         }
       });
     }

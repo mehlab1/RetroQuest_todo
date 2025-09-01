@@ -57,7 +57,7 @@ router.post('/register',
         });
       }
 
-      const { email, username, password } = req.body;
+      const { email, username, password, pokemon } = req.body;
 
       // Check if user exists
       const existingUser = await prisma.user.findUnique({
@@ -81,9 +81,33 @@ router.post('/register',
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Get random starter Pokémon
-      const pokemonPets = await prisma.pokemonPet.findMany();
-      const randomPet = pokemonPets[Math.floor(Math.random() * pokemonPets.length)];
+      // Create or find the selected Pokemon pet
+      let pokemonPet;
+      if (pokemon) {
+        // Check if Pokemon pet already exists
+        pokemonPet = await prisma.pokemonPet.findFirst({
+          where: { name: pokemon.name }
+        });
+
+        if (!pokemonPet) {
+          // Create new Pokemon pet
+          pokemonPet = await prisma.pokemonPet.create({
+            data: {
+              name: pokemon.name,
+              spriteStage1: pokemon.spriteStage1,
+              spriteStage2: pokemon.spriteStage2,
+              spriteStage3: pokemon.spriteStage3,
+              type: pokemon.type,
+              description: pokemon.description,
+              evolutionLevels: pokemon.evolutionLevels
+            }
+          });
+        }
+      } else {
+        // Fallback to random Pokemon if none selected
+        const pokemonPets = await prisma.pokemonPet.findMany();
+        pokemonPet = pokemonPets[Math.floor(Math.random() * pokemonPets.length)];
+      }
 
       // Create user with sanitized data
       const user = await prisma.user.create({
@@ -91,7 +115,7 @@ router.post('/register',
           email: email.toLowerCase().trim(),
           username: username.toLowerCase().trim(),
           password: hashedPassword,
-          pokemonPetId: randomPet?.petId,
+          pokemonPetId: pokemonPet?.petId,
           gamification: {
             create: {
               points: 0,

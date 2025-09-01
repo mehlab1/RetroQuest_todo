@@ -90,7 +90,7 @@ const SwipeableTaskList: React.FC<SwipeableTaskListProps> = ({
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentIndex, totalPages]);
+  }, [currentIndex, totalPages, goToNext, goToPrevious]);
 
   if (tasks.length === 0) {
     return (

@@ -87,7 +87,7 @@ const TasksPage: React.FC = () => {
       
       // Show achievement notifications based on user progress
       if (updatedUser?.gamification) {
-        const { level, points, badges, streakCount } = updatedUser.gamification;
+        const { level, badges, streakCount } = updatedUser.gamification;
         
         // Check for new badges
         if (badges.length > 0) {

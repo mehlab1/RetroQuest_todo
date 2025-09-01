@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Trophy, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface AchievementToastProps {
   message: string;
@@ -59,7 +59,7 @@ const AchievementToast: React.FC<AchievementToastProps> = ({
   };
 
   return (
-    <div className={`fixed top-4 right-4 z-50 transition-all duration-300 transform ${
+    <div className={`achievement-toast transition-all duration-300 transform ${
       isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
       <div className={`${getTypeStyles()} border-2 rounded-lg p-4 shadow-lg max-w-sm`}>

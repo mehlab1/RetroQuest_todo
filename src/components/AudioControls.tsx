@@ -34,16 +34,6 @@ const AudioControls: React.FC = () => {
   }, []);
 
   const handleMusicToggle = () => {
-    if (isMusicPlaying) {
-      backgroundMusic.pause();
-      setIsMusicPlaying(false);
-    } else {
-      backgroundMusic.play();
-      setIsMusicPlaying(true);
-    }
-  };
-
-  const handleMusicMute = () => {
     if (isMusicMuted) {
       backgroundMusic.unmute();
       setIsMusicMuted(false);
@@ -103,22 +93,13 @@ const AudioControls: React.FC = () => {
             <div className="audio-section">
               <div className="audio-header">
                 <span className="audio-label">Music</span>
-                <div className="audio-buttons">
-                  <button
-                    onClick={handleMusicToggle}
-                    className="nes-btn is-small"
-                    title={isMusicPlaying ? "Pause Music" : "Play Music"}
-                  >
-                    {isMusicPlaying ? <Volume1 size={12} /> : <Music size={12} />}
-                  </button>
-                  <button
-                    onClick={handleMusicMute}
-                    className="nes-btn is-small"
-                    title={isMusicMuted ? "Unmute Music" : "Mute Music"}
-                  >
-                    {isMusicMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
-                  </button>
-                </div>
+                <button
+                  onClick={handleMusicToggle}
+                  className="nes-btn is-small"
+                  title={isMusicMuted ? "Unmute Music" : "Mute Music"}
+                >
+                  {isMusicMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
+                </button>
               </div>
               <input
                 type="range"

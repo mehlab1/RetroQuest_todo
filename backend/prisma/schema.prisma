@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,37 +8,35 @@ datasource db {
 }
 
 model User {
-  userId        Int              @id @default(autoincrement()) @map("user_id")
-  email         String           @unique
+  userId        Int                 @id @default(autoincrement()) @map("user_id")
+  email         String              @unique
   username      String?
   password      String?
-  googleId      String?          @unique @map("google_id")
-  points        Int              @default(0)
-  level         Int              @default(1)
-  pokemonPetId  Int?             @map("pokemon_pet_id")
-  createdAt     DateTime         @default(now()) @map("created_at")
-  
-  // Relations
-  pokemonPet    PokemonPet?      @relation(fields: [pokemonPetId], references: [petId])
-  tasks         Task[]
-  taskHistory   TaskHistory[]
-  gamification  Gamification?
+  googleId      String?             @unique @map("google_id")
+  points        Int                 @default(0)
+  level         Int                 @default(1)
+  pokemonPetId  Int?                @map("pokemon_pet_id")
+  createdAt     DateTime            @default(now()) @map("created_at")
   dailyQuests   DailyQuest[]
+  gamification  Gamification?
+  taskHistory   TaskHistory[]
+  tasks         Task[]
   caughtPokemon UserCaughtPokemon[]
+  pokemonPet    PokemonPet?         @relation(fields: [pokemonPetId], references: [petId])
 
   @@map("users")
 }
 
 model PokemonPet {
-  petId         Int      @id @default(autoincrement()) @map("pet_id")
-  name          String
-  spriteStage1  String   @map("sprite_stage_1")
-  spriteStage2  String   @map("sprite_stage_2")
-  spriteStage3  String   @map("sprite_stage_3")
-  levelRequired Int      @map("level_required")
-  
-  // Relations
-  users         User[]
+  petId            Int    @id @default(autoincrement()) @map("pet_id")
+  name             String @unique
+  spriteStage1     String @map("sprite_stage_1")
+  spriteStage2     String @map("sprite_stage_2")
+  spriteStage3     String @map("sprite_stage_3")
+  description      String
+  evolution_levels Json
+  type             String
+  users            User[]
 
   @@map("pokemon_pets")
 }
@@ -56,10 +51,8 @@ model Task {
   isDone      Boolean       @default(false) @map("is_done")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  
-  // Relations
-  user        User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
   taskHistory TaskHistory[]
+  user        User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("tasks")
 }
@@ -71,10 +64,8 @@ model TaskHistory {
   date        DateTime  @db.Date
   isDone      Boolean   @map("is_done")
   completedAt DateTime? @map("completed_at")
-  
-  // Relations
-  user        User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
   task        Task      @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("task_history")
 }
@@ -87,43 +78,56 @@ model Gamification {
   badges         String[] @default([])
   level          Int      @default(1)
   lastUpdated    DateTime @default(now()) @map("last_updated")
-  
-  // Relations
   user           User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("gamification")
 }
 
 model DailyQuest {
-  questId   Int      @id @default(autoincrement()) @map("quest_id")
-  userId    Int      @map("user_id")
-  title     String
-  points    Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at")
-  
-  // Relations
-  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  questId     Int      @id @default(autoincrement()) @map("quest_id")
+  userId      Int      @map("user_id")
+  title       String
+  points      Int      @default(0)
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @map("created_at")
+  user        User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("daily_quests")
 }
 
 model UserCaughtPokemon {
-  id            Int      @id @default(autoincrement())
-  userId        Int      @map("user_id")
-  pokemonId     Int      @map("pokemon_id")
-  pokemonName   String   @map("pokemon_name")
-  pokemonSprite String   @map("pokemon_sprite")
-  pokemonType   String   @map("pokemon_type")
-  rarity        String
-  difficulty    Int
-  description   String
-  pointsReward  Int      @map("points_reward")
-  caughtAt      DateTime @default(now()) @map("caught_at")
-  isCompanion   Boolean  @default(false) @map("is_companion")
-  
-  // Relations
-  user          User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
-  
-  @@unique([userId, pokemonId])
+  id                   Int               @id @default(autoincrement())
+  userId               Int               @map("user_id")
+  caughtAt             DateTime          @default(now()) @map("caught_at")
+  isCompanion          Boolean           @default(false) @map("is_companion")
+  catchable_pokemon_id Int
+  catchable_pokemon    catchable_pokemon @relation(fields: [catchable_pokemon_id], references: [id], onDelete: Cascade)
+  user                 User              @relation(fields: [userId], references: [userId], onDelete: Cascade)
+
+  @@unique([userId, catchable_pokemon_id])
   @@map("user_caught_pokemon")
+}
+
+model catchable_pokemon {
+  id                  Int                 @id @default(autoincrement())
+  pokemon_id          Int                 @unique
+  name                String              @unique
+  sprite              String
+  type                String
+  rarity              String
+  difficulty          Int
+  description         String
+  catch_requirement   String
+  points_reward       Int
+  user_caught_pokemon UserCaughtPokemon[]
+}
+
+model PokemonGif {
+  id        Int      @id @default(autoincrement())
+  pokemonId Int      @unique @map("pokemon_id")
+  name      String
+  gifData   String   @map("gif_data") // Base64 encoded GIF data
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("pokemon_gifs")
 }

@@ -5,6 +5,29 @@ import { authenticateToken } from '../middleware/auth.js';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// Get daily quests for user (alias for /)
+router.get('/daily', authenticateToken, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const quests = await prisma.dailyQuest.findMany({
+      where: {
+        userId: req.user.userId,
+        createdAt: {
+          gte: today
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(quests);
+  } catch (error) {
+    console.error('Get daily quests error:', error);
+    res.status(500).json({ error: 'Failed to fetch daily quests' });
+  }
+});
+
 // Get daily quests for user
 router.get('/', authenticateToken, async (req, res) => {
   try {

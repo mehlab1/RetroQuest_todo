@@ -5,10 +5,12 @@ import AudioControls from './components/AudioControls';
 import PokemonCatching from './components/PokemonCatching';
 import MyPokemons from './components/MyPokemons';
 import { AchievementProvider } from './contexts/AchievementContext';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Menu, X } from 'lucide-react';
+import soundEffects from './utils/soundEffects';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { user, logout } = useAuth();
   const [showPokemonCatching, setShowPokemonCatching] = useState(false);
   const [showMyPokemons, setShowMyPokemons] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -18,9 +20,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <AuthProvider>
-      <AchievementProvider>
-        <Router>
+    <Router>
           <div className="min-h-screen bg-gameboy-dark text-gameboy-lightest font-pixel safe-area">
             
             {/* Fixed Mobile Header */}
@@ -29,17 +29,31 @@ const App: React.FC = () => {
                 <h1 className="mobile-header-title">RetroQuest</h1>
                 <div className="mobile-header-actions">
                   <AudioControls />
-                  <button
-                    onClick={toggleMobileMenu}
-                    className="nes-btn touch-button w-12 h-12"
-                    title="Menu"
-                  >
-                    {showMobileMenu ? (
-                      <X size={20} className="text-gameboy-lightest" />
-                    ) : (
-                      <Menu size={20} className="text-gameboy-lightest" />
-                    )}
-                  </button>
+                  {user && (
+                    <>
+                      <button
+                        onClick={toggleMobileMenu}
+                        className="nes-btn touch-button w-12 h-12"
+                        title="Menu"
+                      >
+                        {showMobileMenu ? (
+                          <X size={20} className="text-gameboy-lightest" />
+                        ) : (
+                          <Menu size={20} className="text-gameboy-lightest" />
+                        )}
+                      </button>
+                      <button
+                        onClick={() => {
+                          soundEffects.playMenuCancel();
+                          logout();
+                        }}
+                        className="nes-btn is-error touch-button w-12 h-12"
+                        title="Logout"
+                      >
+                        <span className="text-gameboy-lightest text-lg">🔌</span>
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             </header>
@@ -50,7 +64,7 @@ const App: React.FC = () => {
             </main>
             
             {/* Mobile Menu Overlay */}
-            {showMobileMenu && (
+            {showMobileMenu && user && (
               <div className="mobile-menu-overlay" onClick={toggleMobileMenu}>
                 <div className="mobile-menu-content" onClick={(e) => e.stopPropagation()}>
                   <div className="mobile-menu-item nes-btn is-primary"
@@ -59,7 +73,9 @@ const App: React.FC = () => {
                       setShowMobileMenu(false);
                     }}
                   >
-                    <span className="mobile-menu-icon nes-icon is-large">🎮</span>
+                    <div className="mobile-menu-icon">
+                      <div className="pokeball-icon"></div>
+                    </div>
                     <div className="mobile-menu-text">
                       <div>Catch Pokemon</div>
                       <div className="mobile-menu-description">Find new Pokemon</div>
@@ -72,7 +88,9 @@ const App: React.FC = () => {
                       setShowMobileMenu(false);
                     }}
                   >
-                    <span className="mobile-menu-icon nes-icon is-large">⚡</span>
+                    <div className="mobile-menu-icon">
+                      <div className="collection-box-icon"></div>
+                    </div>
                     <div className="mobile-menu-text">
                       <div>My Pokemons</div>
                       <div className="mobile-menu-description">View collection</div>
@@ -91,6 +109,16 @@ const App: React.FC = () => {
             )}
           </div>
         </Router>
+  );
+};
+
+
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AchievementProvider>
+        <AppContent />
       </AchievementProvider>
     </AuthProvider>
   );

@@ -10,7 +10,7 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const { login, loginWithGoogle } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   // Demo account functionality removed for security
@@ -24,7 +24,7 @@ const LoginPage: React.FC = () => {
       await login(email, password);
       soundEffects.playVictory();
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (error: { response?: { data?: { error?: string } } }) {
       setError(error.response?.data?.error || 'Login failed');
       soundEffects.playError();
     } finally {
@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
         <div className="p-6">
           <div className="text-center mb-8">
             <div className="w-16 h-16 mx-auto bg-gameboy-light border-4 border-gameboy-lightest rounded-lg mb-4 flex items-center justify-center">
-              <span className="text-2xl">🎮</span>
+              <span className="text-2xl">🕹️</span>
             </div>
             <h2 className="font-pixel text-sm text-gameboy-lightest">Welcome Back!</h2>
           </div>

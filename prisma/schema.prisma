@@ -34,16 +34,36 @@ model User {
 
 model PokemonPet {
   petId         Int      @id @default(autoincrement()) @map("pet_id")
-  name          String
+  name          String   @unique
   spriteStage1  String   @map("sprite_stage_1")
   spriteStage2  String   @map("sprite_stage_2")
   spriteStage3  String   @map("sprite_stage_3")
-  levelRequired Int      @map("level_required")
+  type          String
+  description   String
+  evolutionLevels Json   @map("evolution_levels") // Store as JSON: { stage2: number, stage3: number }
   
   // Relations
   users         User[]
 
   @@map("pokemon_pets")
+}
+
+model CatchablePokemon {
+  id            Int      @id @default(autoincrement())
+  pokemonId     Int      @unique @map("pokemon_id") // Original Pokemon ID from PokeAPI
+  name          String   @unique
+  sprite        String
+  type          String
+  rarity        String   // common, uncommon, rare, legendary, mythical
+  difficulty    Int
+  description   String
+  catchRequirement String @map("catch_requirement")
+  pointsReward  Int      @map("points_reward")
+  
+  // Relations
+  caughtPokemon UserCaughtPokemon[]
+
+  @@map("catchable_pokemon")
 }
 
 model Task {
@@ -95,15 +115,15 @@ model Gamification {
 }
 
 model DailyQuest {
-  questId   Int      @id @default(autoincrement()) @map("quest_id")
-  userId    Int      @map("user_id")
-  title     String
-  points    Int      @default(0)
-  isCompleted Boolean @default(false) @map("is_completed")
-  createdAt DateTime @default(now()) @map("created_at")
+  questId     Int      @id @default(autoincrement()) @map("quest_id")
+  userId      Int      @map("user_id")
+  title       String
+  points      Int      @default(0)
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @map("created_at")
   
   // Relations
-  user      User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("daily_quests")
 }
@@ -111,20 +131,14 @@ model DailyQuest {
 model UserCaughtPokemon {
   id            Int      @id @default(autoincrement())
   userId        Int      @map("user_id")
-  pokemonId     Int      @map("pokemon_id")
-  pokemonName   String   @map("pokemon_name")
-  pokemonSprite String   @map("pokemon_sprite")
-  pokemonType   String   @map("pokemon_type")
-  rarity        String
-  difficulty    Int
-  description   String
-  pointsReward  Int      @map("points_reward")
+  catchablePokemonId Int @map("catchable_pokemon_id")
   caughtAt      DateTime @default(now()) @map("caught_at")
   isCompanion   Boolean  @default(false) @map("is_companion")
   
   // Relations
   user          User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  catchablePokemon CatchablePokemon @relation(fields: [catchablePokemonId], references: [id], onDelete: Cascade)
   
-  @@unique([userId, pokemonId])
+  @@unique([userId, catchablePokemonId])
   @@map("user_caught_pokemon")
 }

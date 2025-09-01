@@ -7,7 +7,7 @@ const Header: React.FC = () => {
   const { user, logout } = useAuth();
 
   const getCurrentSprite = () => {
-    if (!user?.pokemonPet) return '🎮';
+    if (!user?.pokemonPet) return '🕹️';
     
     const { level } = user;
     const evolutionLevels = user.pokemonPet.evolutionLevels || { stage2: 16, stage3: 32 };
@@ -38,7 +38,7 @@ const Header: React.FC = () => {
                 className="w-full h-full object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = '🎮'; // Fallback emoji
+                  target.src = '🕹️'; // Fallback emoji
                 }}
               />
             </div>
