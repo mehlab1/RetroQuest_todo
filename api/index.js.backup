@@ -783,7 +783,7 @@ app.get('/api/pokemon/sprite/catchable/:id', async (req, res) => {
 
     const { id } = req.params;
     
-    const catchablePokemon = await prisma.catchablePokemon.findUnique({
+    const catchablePokemon = await prisma.catchable_pokemon.findUnique({
       where: { id: parseInt(id) }
     });
 
@@ -1166,7 +1166,7 @@ app.get('/api/pokemon/sprite/catchable/:id', async (req, res) => {
 
     const { id } = req.params;
     
-    const catchablePokemon = await prisma.catchablePokemon.findUnique({
+    const catchablePokemon = await prisma.catchable_pokemon.findUnique({
       where: { id: parseInt(id) }
     });
 

@@ -82,7 +82,7 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
       const catchableResponse = await pokemonApi.getCatchablePokemon();
       const allCatchablePokemon = catchableResponse.data.data || [];
 
-      // Check which Pokemon are available based on achievements
+      // Show all Pokemon that aren't already caught (simplified filtering)
       const available = allCatchablePokemon.filter((pokemon: CatchablePokemon) => {
         // Don't show Pokemon that are already caught
         const alreadyCaught = caughtPokemonList.some(caught => 
@@ -94,104 +94,9 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
           return false;
         }
 
-        switch (pokemon.name) {
-          case 'Caterpie':
-            return completedTasks.length >= 1;
-          case 'Rattata':
-            return completedToday >= 3;
-          case 'Pidgey':
-            return streakCount >= 2;
-          case 'Psyduck':
-            return totalTasks >= 10;
-          case 'Pikachu':
-            return highPriorityTasks >= 5;
-          case 'Ekans':
-            return streakCount >= 5;
-          case 'Charizard':
-            return completedTasks.length >= 20;
-          case 'Blastoise':
-            return streakCount >= 10;
-          case 'Mewtwo':
-            return totalTasks >= 50;
-          case 'Mew':
-            return totalTasks >= 100 && streakCount >= 30;
-          case 'Lugia':
-            return streakCount >= 7; // Simplified for demo
-          case 'Rayquaza':
-            return userLevel >= 50 && totalTasks >= 200;
-          // Common Pokemon
-          case 'Weedle':
-            return completedTasks.length >= 1;
-          case 'Spearow':
-            return completedTasks.length >= 3;
-          case 'Nidoran♀':
-            return completedToday >= 2;
-          case 'Nidoran♂':
-            return completedToday >= 2;
-          case 'Vulpix':
-            return completedTasks.length >= 4;
-          case 'Zubat':
-            return completedTasks.length >= 3;
-          case 'Oddish':
-            return completedTasks.length >= 2;
-          case 'Magikarp':
-            return completedTasks.length >= 1;
-          // Uncommon Pokemon
-          case 'Abra':
-            return completedTasks.length >= 5;
-          case 'Ponyta':
-            return completedTasks.length >= 5;
-          case 'Magnemite':
-            return completedTasks.length >= 5;
-          case 'Clefairy':
-            return completedTasks.length >= 6;
-          case 'Jigglypuff':
-            return completedTasks.length >= 5;
-          case 'Growlithe':
-            return completedTasks.length >= 6;
-          // Rare Pokemon
-          case 'Chansey':
-            return completedTasks.length >= 8;
-          case 'Kangaskhan':
-            return completedTasks.length >= 8;
-          case 'Lapras':
-            return completedTasks.length >= 12;
-          case 'Mr. Mime':
-            return completedTasks.length >= 10;
-          case 'Scyther':
-            return completedTasks.length >= 10;
-          case 'Jynx':
-            return completedTasks.length >= 10;
-          case 'Electabuzz':
-            return completedTasks.length >= 10;
-          case 'Magmar':
-            return completedTasks.length >= 10;
-          case 'Pinsir':
-            return completedTasks.length >= 10;
-          case 'Tauros':
-            return completedTasks.length >= 10;
-          case 'Eevee':
-            return completedTasks.length >= 12;
-          case 'Jolteon':
-            return completedTasks.length >= 12;
-          case 'Flareon':
-            return completedTasks.length >= 12;
-          // Legendary Pokemon
-          case 'Articuno':
-            return completedTasks.length >= 20;
-          case 'Zapdos':
-            return completedTasks.length >= 20;
-          case 'Moltres':
-            return completedTasks.length >= 20;
-          case 'Snorlax':
-            return completedTasks.length >= 15;
-          case 'Dratini':
-            return completedTasks.length >= 18;
-          case 'Dragonite':
-            return completedTasks.length >= 20;
-          default:
-            return false;
-        }
+        // For now, show all Pokemon that aren't caught
+        // You can add specific requirements later if needed
+        return true;
       });
 
       console.log(`Available Pokemon: ${available.length}, Caught Pokemon: ${caughtPokemonList.length}`);
