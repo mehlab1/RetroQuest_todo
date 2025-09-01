@@ -75,6 +75,9 @@ scripts/
 # Backend (we only need the API folder)
 backend/
 
+# PokeAPI sprites repository (not needed in production)
+sprites/
+
 # Prisma migrations (not needed in production)
 prisma/migrations/
 

@@ -614,6 +614,21 @@ app.get('/api/quests/daily', async (req, res) => {
 });
 
 // Pokemon API
+app.get('/api/pokemon', async (req, res) => {
+  try {
+    const pokemonPets = await prisma.pokemonPet.findMany({
+      orderBy: { petId: 'asc' }
+    });
+    res.json({
+      value: pokemonPets,
+      Count: pokemonPets.length
+    });
+  } catch (error) {
+    console.error('Get Pokemon pets error:', error);
+    res.status(500).json({ error: 'Failed to fetch Pokemon pets' });
+  }
+});
+
 app.get('/api/pokemon/available', async (req, res) => {
   try {
     const availablePokemon = await prisma.pokemonPet.findMany({

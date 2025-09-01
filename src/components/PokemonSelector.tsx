@@ -31,8 +31,8 @@ const PokemonSelector: React.FC<PokemonSelectorProps> = ({ onSelect, selectedPok
     const fetchPokemon = async () => {
       try {
         setLoading(true);
-        const response = await pokemonApi.getAvailablePokemon();
-        setPokemonList(response.data.data || []);
+        const response = await pokemonApi.getPokemonPets();
+        setPokemonList(response.data?.value || response.data || []);
       } catch (err) {
         console.error('Failed to fetch Pokemon:', err);
         setError('Failed to load Pokemon data');

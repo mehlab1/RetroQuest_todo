@@ -88,6 +88,7 @@ export const historyApi = {
 
 // Pokemon API
 export const pokemonApi = {
+  getPokemonPets: () => api.get('/pokemon'),
   getAvailablePokemon: () => api.get('/pokemon/available'),
   getCatchablePokemon: () => api.get('/pokemon/catchable'),
   getPokemonById: (id: number) => api.get(`/pokemon/${id}`),
