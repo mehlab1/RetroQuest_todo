@@ -82,7 +82,7 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
       const catchableResponse = await pokemonApi.getCatchablePokemon();
       const allCatchablePokemon = catchableResponse.data.data || [];
 
-      // Show all Pokemon that aren't already caught (simplified filtering)
+      // Check availability based on the EXACT Pokemon in your database
       const available = allCatchablePokemon.filter((pokemon: CatchablePokemon) => {
         // Don't show Pokemon that are already caught
         const alreadyCaught = caughtPokemonList.some(caught => 
@@ -94,9 +94,56 @@ const PokemonCatching: React.FC<PokemonCatchingProps> = ({ onClose }) => {
           return false;
         }
 
-        // For now, show all Pokemon that aren't caught
-        // You can add specific requirements later if needed
-        return true;
+        // Don't show Pokemon that is the user's current companion
+        if (user?.pokemonPet?.name === pokemon.name) {
+          console.log(`Filtering out ${pokemon.name} - user's current companion`);
+          return false;
+        }
+
+        // Check availability based on the actual Pokemon in your database
+        switch (pokemon.name) {
+          // Common Pokemon (1 task required)
+          case 'Bulbasaur':
+          case 'Charmander':
+          case 'Squirtle':
+            return completedTasks.length >= 1;
+          
+          // Uncommon Pokemon (3-5 tasks required)
+          case 'Pikachu':
+            return completedTasks.length >= 3;
+          case 'Eevee':
+            return completedTasks.length >= 5;
+          
+          // Rare Pokemon (10 tasks required)
+          case 'Blastoise':
+          case 'Charizard':
+          case 'Venusaur':
+            return completedTasks.length >= 10;
+          
+          // Legendary Pokemon (25 tasks required)
+          case 'Mewtwo':
+            return completedTasks.length >= 25;
+          
+          // Mythical Pokemon (30 tasks required)
+          case 'Mew':
+            return completedTasks.length >= 30;
+          
+          // Default case - fallback to rarity-based requirements
+          default:
+            // Show Pokemon based on their actual rarity from database
+            if (pokemon.rarity === 'common') {
+              return completedTasks.length >= 1;
+            } else if (pokemon.rarity === 'uncommon') {
+              return completedTasks.length >= 3;
+            } else if (pokemon.rarity === 'rare') {
+              return completedTasks.length >= 10;
+            } else if (pokemon.rarity === 'legendary') {
+              return completedTasks.length >= 25;
+            } else if (pokemon.rarity === 'mythical') {
+              return completedTasks.length >= 30;
+            }
+            return true; // Show any Pokemon that doesn't match above conditions
+        }
       });
 
       console.log(`Available Pokemon: ${available.length}, Caught Pokemon: ${caughtPokemonList.length}`);
