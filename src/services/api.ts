@@ -57,9 +57,10 @@ export const authApi = {
 export const tasksApi = {
   getTasks: () => api.get('/tasks'),
   getTodayTasks: () => api.get('/tasks/today'),
-  createTask: (task: { title: string; description?: string; category?: string }) =>
+  getTaskHistory: (days?: number) => api.get(`/tasks/history${days ? `?days=${days}` : ''}`),
+  createTask: (task: { title: string; description?: string; category?: string; priority?: string }) =>
     api.post('/tasks', task),
-  updateTask: (id: number, task: { title?: string; description?: string; category?: string; isDone?: boolean }) => api.put(`/tasks/${id}`, task),
+  updateTask: (id: number, task: { title?: string; description?: string; category?: string; priority?: string; isDone?: boolean }) => api.put(`/tasks/${id}`, task),
   deleteTask: (id: number) => api.delete(`/tasks/${id}`),
 };
 

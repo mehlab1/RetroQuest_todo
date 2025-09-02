@@ -476,7 +476,7 @@ app.post('/api/tasks', async (req, res) => {
   }
 });
 
-// Update task (toggle completion)
+// Update task (full editing and completion toggle)
 app.put('/api/tasks/:id', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
@@ -486,7 +486,7 @@ app.put('/api/tasks/:id', async (req, res) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
     const { id } = req.params;
-    const { isDone } = req.body;
+    const { title, description, category, priority, isDone } = req.body;
 
     const task = await prisma.task.findFirst({
       where: { 
@@ -501,24 +501,35 @@ app.put('/api/tasks/:id', async (req, res) => {
 
     const wasDone = task.isDone;
     
+    // Prepare update data
+    const updateData = {
+      updatedAt: new Date()
+    };
+
+    // Handle different types of updates
+    if (title !== undefined) updateData.title = title;
+    if (description !== undefined) updateData.description = description;
+    if (category !== undefined) updateData.category = category;
+    if (priority !== undefined) updateData.priority = priority;
+    if (isDone !== undefined) updateData.isDone = isDone;
+    
     const updatedTask = await prisma.task.update({
       where: { taskId: parseInt(id) },
-      data: { 
-        isDone: isDone,
-        updatedAt: new Date()
-      }
+      data: updateData
     });
 
-    // Handle points and quest tracking
-    if (isDone && !wasDone) {
-      // Task completed - award points
-      const result = await updateUserPoints(decoded.userId, 10, 'task_completion');
-      if (result && result.leveledUp) {
-        console.log(`User ${decoded.userId} leveled up to level ${result.user.level}!`);
+    // Handle points and quest tracking only for completion changes
+    if (isDone !== undefined && isDone !== wasDone) {
+      if (isDone && !wasDone) {
+        // Task completed - award points
+        const result = await updateUserPoints(decoded.userId, 10, 'task_completion');
+        if (result && result.leveledUp) {
+          console.log(`User ${decoded.userId} leveled up to level ${result.user.level}!`);
+        }
+      } else if (!isDone && wasDone) {
+        // Task uncompleted - remove points
+        await updateUserPoints(decoded.userId, -10, 'task_incompletion');
       }
-    } else if (!isDone && wasDone) {
-      // Task uncompleted - remove points
-      await updateUserPoints(decoded.userId, -10, 'task_incompletion');
     }
 
     res.json(updatedTask);
@@ -556,6 +567,39 @@ app.get('/api/tasks/today', async (req, res) => {
   } catch (error) {
     console.error('Get today tasks error:', error);
     res.status(500).json({ error: 'Failed to fetch today tasks' });
+  }
+});
+
+// Task History API
+app.get('/api/tasks/history', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const { days = 7 } = req.query;
+    
+    const daysAgo = new Date();
+    daysAgo.setDate(daysAgo.getDate() - parseInt(days));
+    
+    const taskHistory = await prisma.taskHistory.findMany({
+      where: {
+        userId: decoded.userId,
+        date: {
+          gte: daysAgo
+        }
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    });
+    
+    res.json(taskHistory);
+  } catch (error) {
+    console.error('Get task history error:', error);
+    res.status(500).json({ error: 'Failed to fetch task history' });
   }
 });
 

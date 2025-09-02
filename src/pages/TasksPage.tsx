@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useAchievement } from '../contexts/AchievementContext';
 import { tasksApi } from '../services/api';
-import { Plus, X, Edit3, Sparkles } from 'lucide-react';
+import { Plus, X, Edit3, Sparkles, History } from 'lucide-react';
 import TaskForm from '../components/TaskForm';
 import TaskTemplates from '../components/TaskTemplates';
+import TaskHistory from '../components/TaskHistory';
 import soundEffects from '../utils/soundEffects';
 
 interface Task {
@@ -23,6 +24,7 @@ const TasksPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
@@ -209,6 +211,16 @@ const TasksPage: React.FC = () => {
             <Sparkles size={12} />
             <span>TEMPLATES</span>
           </button>
+          <button
+            onClick={() => {
+              soundEffects.playMenuSelect();
+              setShowHistory(true);
+            }}
+            className="bg-gameboy-medium text-gameboy-lightest font-pixel text-xs py-3 px-4 border-2 border-gameboy-border rounded flex items-center justify-center space-x-2 hover:bg-gameboy-light transition-colors duration-200"
+          >
+            <History size={12} />
+            <span>HISTORY</span>
+          </button>
         </div>
       </div>
 
@@ -227,6 +239,13 @@ const TasksPage: React.FC = () => {
         <TaskTemplates
           onSelectTemplate={handleTemplateSelect}
           onClose={handleCloseTemplates}
+        />
+      )}
+
+      {/* Task History Modal */}
+      {showHistory && (
+        <TaskHistory
+          onClose={() => setShowHistory(false)}
         />
       )}
 
