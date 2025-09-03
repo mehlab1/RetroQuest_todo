@@ -51,7 +51,6 @@ model Task {
   isDone      Boolean       @default(false) @map("is_done")
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
-  taskHistory TaskHistory[]
   user        User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("tasks")
@@ -61,10 +60,13 @@ model TaskHistory {
   historyId   Int       @id @default(autoincrement()) @map("history_id")
   userId      Int       @map("user_id")
   taskId      Int       @map("task_id")
+  title       String
+  description String?
+  category    String?
+  priority    String?
   date        DateTime  @db.Date
   isDone      Boolean   @map("is_done")
   completedAt DateTime? @map("completed_at")
-  task        Task      @relation(fields: [taskId], references: [taskId], onDelete: Cascade)
   user        User      @relation(fields: [userId], references: [userId], onDelete: Cascade)
 
   @@map("task_history")

@@ -67,6 +67,8 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ onClose }) => {
       case 'Personal': return 'bg-green-600';
       case 'Health': return 'bg-red-600';
       case 'Learning': return 'bg-purple-600';
+      case 'Training': return 'bg-orange-600';
+      case 'Chores': return 'bg-yellow-600';
       default: return 'bg-gray-600';
     }
   };
@@ -99,22 +101,23 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 mobile-p-2 sm:mobile-p-4">
-      <div className="nes-container with-title is-rounded w-full max-w-4xl max-h-[90vh] overflow-y-auto mobile-modal">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="nes-container with-title is-rounded w-full max-w-4xl max-h-[90vh] overflow-y-auto">
         <p className="title">Task History</p>
-        <div className="mobile-p-3 sm:mobile-p-6">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <div className="p-3 sm:p-6">
+          {/* Mobile-responsive header */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 sm:mb-6 space-y-2 sm:space-y-0">
             <div className="flex items-center space-x-2">
               <Calendar className="w-4 h-4 text-gameboy-lightest" />
               <span className="font-pixel text-sm text-gameboy-lightest">
                 Past {selectedDays} days
               </span>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
               <select
                 value={selectedDays}
                 onChange={(e) => setSelectedDays(parseInt(e.target.value))}
-                className="nes-select bg-gameboy-dark border-2 border-gameboy-border text-gameboy-lightest font-pixel text-xs"
+                className="nes-select bg-gameboy-dark border-2 border-gameboy-border text-gameboy-lightest font-pixel text-xs flex-1 sm:flex-none"
               >
                 <option value={7}>7 days</option>
                 <option value={14}>14 days</option>
@@ -125,7 +128,7 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ onClose }) => {
                   soundEffects.playMenuCancel();
                   onClose();
                 }}
-                className="nes-btn is-error touch-button w-8 h-8 sm:w-10 sm:h-10"
+                className="nes-btn is-error touch-button w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0"
                 title="Close"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -135,8 +138,12 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ onClose }) => {
 
           {Object.keys(groupedTasks).length === 0 ? (
             <div className="text-center py-8">
-              <p className="font-pixel text-sm text-gameboy-lightest">
-                No task history found for the selected period.
+              <div className="w-16 h-16 mx-auto mb-4 opacity-50">📚</div>
+              <p className="font-pixel text-sm text-gameboy-lightest mb-2">
+                No task history found
+              </p>
+              <p className="font-pixel text-xs text-gameboy-light">
+                Completed tasks will appear here after daily reset
               </p>
             </div>
           ) : (
@@ -156,33 +163,33 @@ const TaskHistory: React.FC<TaskHistoryProps> = ({ onClose }) => {
                       {tasks.map((task) => (
                         <div
                           key={task.historyId}
-                          className="flex items-center justify-between p-2 bg-gameboy-dark border border-gameboy-border rounded"
+                          className="flex items-start justify-between p-2 bg-gameboy-dark border border-gameboy-border rounded"
                         >
-                          <div className="flex items-center space-x-2 flex-1">
+                          <div className="flex items-start space-x-2 flex-1 min-w-0">
                             {task.isDone ? (
-                              <CheckCircle className="w-4 h-4 text-green-400" />
+                              <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                             ) : (
-                              <Circle className="w-4 h-4 text-gray-400" />
+                              <Circle className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                             )}
-                            <div className="flex-1">
-                              <p className={`font-pixel text-xs ${task.isDone ? 'line-through text-gray-400' : 'text-gameboy-lightest'}`}>
+                            <div className="flex-1 min-w-0">
+                              <p className={`font-pixel text-xs ${task.isDone ? 'line-through text-gray-400' : 'text-gameboy-lightest'} break-words`}>
                                 {task.title}
                               </p>
                               {task.description && (
-                                <p className="font-pixel text-xs text-gameboy-light mt-1">
+                                <p className="font-pixel text-xs text-gameboy-light mt-1 break-words">
                                   {task.description}
                                 </p>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center space-x-2">
+                          <div className="flex flex-col items-end space-y-1 ml-2">
                             {task.category && (
-                              <span className={`px-2 py-1 rounded text-xs font-pixel text-white ${getCategoryColor(task.category)}`}>
+                              <span className={`px-2 py-1 rounded text-xs font-pixel text-white ${getCategoryColor(task.category)} whitespace-nowrap`}>
                                 {task.category}
                               </span>
                             )}
                             {task.priority && (
-                              <span className={`font-pixel text-xs ${getPriorityColor(task.priority)}`}>
+                              <span className={`font-pixel text-xs ${getPriorityColor(task.priority)} whitespace-nowrap`}>
                                 {task.priority}
                               </span>
                             )}

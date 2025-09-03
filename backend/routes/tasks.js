@@ -123,12 +123,15 @@ router.get('/today', authenticateToken, async (req, res) => {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
 
     const tasks = await prisma.task.findMany({
       where: {
         userId: req.user.userId,
         createdAt: {
-          gte: today
+          gte: today,
+          lt: tomorrow
         }
       },
       orderBy: { createdAt: 'desc' }

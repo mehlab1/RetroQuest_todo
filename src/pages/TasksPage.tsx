@@ -33,7 +33,8 @@ const TasksPage: React.FC = () => {
 
   const loadTasks = async () => {
     try {
-      const response = await tasksApi.getTasks();
+      // Use getTodayTasks instead of getTasks to only show today's tasks
+      const response = await tasksApi.getTodayTasks();
       setTasks(response.data);
     } catch (error) {
       console.error('Failed to load tasks:', error);
@@ -182,10 +183,10 @@ const TasksPage: React.FC = () => {
       {/* Header with Stats */}
       <div className="bg-gameboy-dark border-4 border-gameboy-border rounded-lg p-4">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="font-pixel text-sm text-gameboy-lightest">Task Pokédex</h1>
+          <h1 className="font-pixel text-sm text-gameboy-lightest">Today's Tasks</h1>
           <div className="text-right">
             <p className="font-pixel text-xs text-gameboy-light">
-              {completedTasks}/{tasks.length} caught
+              {completedTasks}/{tasks.length} completed
             </p>
             <div className="w-20 h-2 bg-gameboy-medium border border-gameboy-border rounded overflow-hidden mt-1">
               <div 
@@ -196,10 +197,11 @@ const TasksPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex space-x-2">
+        {/* Mobile-responsive button layout */}
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:space-x-2">
           <button
             onClick={handleShowForm}
-            className="flex-1 bg-gameboy-light text-gameboy-dark font-pixel text-xs py-3 px-4 border-2 border-gameboy-lightest rounded flex items-center justify-center space-x-2 hover:bg-gameboy-lightest transition-colors duration-200"
+            className="col-span-2 sm:col-span-1 bg-gameboy-light text-gameboy-dark font-pixel text-xs py-3 px-4 border-2 border-gameboy-lightest rounded flex items-center justify-center space-x-2 hover:bg-gameboy-lightest transition-colors duration-200"
           >
             <Plus size={12} />
             <span>NEW TASK</span>
@@ -209,7 +211,8 @@ const TasksPage: React.FC = () => {
             className="bg-gameboy-medium text-gameboy-lightest font-pixel text-xs py-3 px-4 border-2 border-gameboy-border rounded flex items-center justify-center space-x-2 hover:bg-gameboy-light transition-colors duration-200"
           >
             <Sparkles size={12} />
-            <span>TEMPLATES</span>
+            <span className="hidden sm:inline">TEMPLATES</span>
+            <span className="sm:hidden">TEMP</span>
           </button>
           <button
             onClick={() => {
@@ -219,7 +222,8 @@ const TasksPage: React.FC = () => {
             className="bg-gameboy-medium text-gameboy-lightest font-pixel text-xs py-3 px-4 border-2 border-gameboy-border rounded flex items-center justify-center space-x-2 hover:bg-gameboy-light transition-colors duration-200"
           >
             <History size={12} />
-            <span>HISTORY</span>
+            <span className="hidden sm:inline">HISTORY</span>
+            <span className="sm:hidden">HIST</span>
           </button>
         </div>
       </div>
@@ -264,7 +268,7 @@ const TasksPage: React.FC = () => {
         ) : (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 opacity-50">📝</div>
-            <p className="font-pixel text-xs text-gameboy-light mb-4">No tasks yet</p>
+            <p className="font-pixel text-xs text-gameboy-light mb-4">No tasks for today</p>
             <button
               onClick={handleShowForm}
               className="bg-gameboy-light text-gameboy-dark font-pixel text-xs py-2 px-4 border-2 border-gameboy-lightest rounded hover:bg-gameboy-lightest transition-colors"

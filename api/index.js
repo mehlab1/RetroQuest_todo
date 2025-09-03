@@ -203,6 +203,9 @@ app.post('/api/auth/register',
   [validateEmail, validatePassword, validateUsername],
   async (req, res) => {
     try {
+      // Debug: Log the request body
+      console.log('Registration request body:', JSON.stringify(req.body, null, 2));
+      
       // Check for validation errors
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -236,10 +239,23 @@ app.post('/api/auth/register',
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Validate Pokemon selection
-      if (!pokemon || !pokemon.petId || !pokemon.name) {
+      console.log('Pokemon validation - pokemon object:', pokemon);
+      if (!pokemon) {
         return res.status(400).json({ 
           error: 'Invalid Pokemon selection',
-          message: 'Please select a valid Pokemon companion'
+          message: 'Pokemon object is missing'
+        });
+      }
+      if (!pokemon.petId) {
+        return res.status(400).json({ 
+          error: 'Invalid Pokemon selection',
+          message: 'Pokemon petId is missing'
+        });
+      }
+      if (!pokemon.name) {
+        return res.status(400).json({ 
+          error: 'Invalid Pokemon selection',
+          message: 'Pokemon name is missing'
         });
       }
 
@@ -560,6 +576,9 @@ app.get('/api/tasks/today', async (req, res) => {
           gte: today,
           lt: tomorrow
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
     
