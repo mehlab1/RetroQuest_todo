@@ -5,6 +5,8 @@ import jwt from 'jsonwebtoken';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
 import { PrismaClient } from '@prisma/client';
+import cron from 'node-cron';
+import { archiveOldTasks, archiveUserTasks, getArchivingStats, validateArchivingProcess } from '../services/taskArchiver.js';
 
 const app = express();
 
@@ -30,7 +32,36 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Daily reset is now handled by cron job in backend/server.js
+// Task Archiving Cron Job - runs at midnight UTC
+cron.schedule('0 0 * * *', async () => {
+  console.log('🕛 Midnight task archiving triggered at:', new Date().toISOString());
+  try {
+    // Validate archiving process first
+    const validation = await validateArchivingProcess();
+    if (!validation.isValid) {
+      console.error('❌ Archiving validation failed:', validation.message);
+      return;
+    }
+    
+    // Perform archiving
+    const result = await archiveOldTasks();
+    console.log('✅ Midnight archiving completed successfully:', result.message);
+    
+    // Log statistics
+    const stats = await getArchivingStats();
+    console.log('📊 Post-archiving stats:', {
+      totalTasks: stats.totalTasks,
+      totalHistoryEntries: stats.totalHistoryEntries,
+      todayTasks: stats.todayTasks
+    });
+    
+  } catch (error) {
+    console.error('💥 Midnight archiving failed:', error);
+    // In production, you might want to send alerts here
+  }
+});
+
+console.log('⏰ Task archiving cron job scheduled for midnight UTC');
 
 // Rate limiting for security
 const loginLimiter = rateLimit({
@@ -619,6 +650,107 @@ app.get('/api/tasks/history', async (req, res) => {
   } catch (error) {
     console.error('Get task history error:', error);
     res.status(500).json({ error: 'Failed to fetch task history' });
+  }
+});
+
+// Task Archiving API
+app.post('/api/tasks/archive', async (req, res) => {
+  try {
+    console.log('🔄 Manual task archiving requested');
+    
+    // Validate the archiving process first
+    const validation = await validateArchivingProcess();
+    if (!validation.isValid) {
+      return res.status(400).json({ 
+        error: 'Archiving validation failed', 
+        message: validation.message 
+      });
+    }
+    
+    // Perform archiving
+    const result = await archiveOldTasks();
+    
+    console.log('✅ Manual archiving completed:', result.message);
+    
+    res.json({
+      success: true,
+      message: result.message,
+      archivedCount: result.archivedCount,
+      deletedCount: result.deletedCount,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Manual archiving failed:', error);
+    res.status(500).json({ 
+      error: 'Archiving failed', 
+      message: error.message 
+    });
+  }
+});
+
+// Manual Task Archiving for Testing
+app.post('/api/tasks/archive/manual', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    const userId = decoded.userId;
+    
+    console.log(`🔄 Manual task archiving requested for user ${userId}`);
+    
+    // Archive tasks for specific user
+    const result = await archiveUserTasks(userId);
+    
+    console.log(`✅ Manual archiving completed for user ${userId}:`, result.message);
+    
+    res.json({
+      success: true,
+      message: result.message,
+      archivedCount: result.archivedCount,
+      deletedCount: result.deletedCount,
+      userId: userId,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Manual user archiving failed:', error);
+    res.status(500).json({ 
+      error: 'User archiving failed', 
+      message: error.message 
+    });
+  }
+});
+
+// Get Archiving Statistics
+app.get('/api/tasks/archive/stats', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    
+    const stats = await getArchivingStats();
+    const validation = await validateArchivingProcess();
+    
+    res.json({
+      success: true,
+      stats: stats,
+      validation: validation,
+      timestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('❌ Failed to get archiving stats:', error);
+    res.status(500).json({ 
+      error: 'Failed to get archiving stats', 
+      message: error.message 
+    });
   }
 });
 

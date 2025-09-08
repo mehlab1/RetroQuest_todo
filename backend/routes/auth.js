@@ -219,13 +219,14 @@ router.post('/login',
       });
     }
 
-    // Update last login timestamp
+    // Update last updated timestamp in gamification
     await prisma.user.update({
       where: { userId: user.userId },
       data: {
         gamification: {
-          ...user.gamification,
-          lastLoginDate: new Date().toISOString()
+          update: {
+            lastUpdated: new Date()
+          }
         }
       }
     });
