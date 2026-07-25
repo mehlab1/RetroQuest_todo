@@ -3,15 +3,23 @@
   "schema_version": 1,
   "project": "RetroQuest",
   "active_phase": 0,
-  "last_updated": null,
+  "last_updated": "2026-07-25T00:00:00Z",
   "last_session_ended_cleanly": null,
 
   "phases": {
     "0": {
       "name": "Clear the ground",
-      "status": "not_started",
+      "status": "in_progress",
       "tasks": {
-        "0.1": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
+        "0.1": {
+          "status": "done",
+          "gate_results": {
+            "functional_correctness": "PASS - live deploy entry confirmed as api/index.js via vercel.json rewrites; .vercelignore independently confirms backend/ is excluded from deployment",
+            "scalability_structure": "PASS - grep evidence for every Task 0.2/0.3 deletion candidate recorded in phases/PHASE_0_TASK_0.1_FINDINGS.md, including dynamic-import and package.json-scripts edge cases"
+          },
+          "files_changed": ["retroquest-system/rq-system/phases/PHASE_0_TASK_0.1_FINDINGS.md"],
+          "notes": ["Findings doc lists every deletion candidate with its only-importer (if any) and orphan verdict. All candidates confirmed orphaned relative to the live Vercel deployment."]
+        },
         "0.2": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
         "0.3": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
         "0.4": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] }
