@@ -20,7 +20,26 @@
           "files_changed": ["retroquest-system/rq-system/phases/PHASE_0_TASK_0.1_FINDINGS.md"],
           "notes": ["Findings doc lists every deletion candidate with its only-importer (if any) and orphan verdict. All candidates confirmed orphaned relative to the live Vercel deployment."]
         },
-        "0.2": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
+        "0.2": {
+          "status": "done",
+          "gate_results": {
+            "build_compile": "PASS - `npm install` succeeded at repo root (746 packages) and in backend/ (403 packages) after deletion",
+            "scalability_structure": "PASS - git diff --stat shows 21 files / 5026 lines deleted (api/index.js, api/index.js.backup, root routes/*.js incl. tasks.js.snippet, root middleware/auth.js, root config/passport.js, backend/config/passport.js, backend/middleware/auth.js, backend/routes/*.js); post-deletion grep re-run shows zero remaining references outside backend/server.js's own now-dangling imports (expected, deferred to Phase 1 per PHASE_0.md)",
+            "regression": "PASS - `npm run dev` (vite) starts cleanly on :5173 in 344ms after deletion"
+          },
+          "files_changed": [
+            "api/index.js (deleted)", "api/index.js.backup (deleted)",
+            "routes/auth.js (deleted)", "routes/gamification.js (deleted)", "routes/history.js (deleted)", "routes/pokemon.js (deleted)", "routes/quests.js (deleted)", "routes/tasks.js (deleted)", "routes/tasks.js.snippet (deleted)", "routes/users.js (deleted)",
+            "middleware/auth.js (deleted)", "config/passport.js (deleted)",
+            "backend/config/passport.js (deleted)", "backend/middleware/auth.js (deleted)",
+            "backend/routes/auth.js (deleted)", "backend/routes/gamification.js (deleted)", "backend/routes/history.js (deleted)", "backend/routes/pokemon.js (deleted)", "backend/routes/quests.js (deleted)", "backend/routes/tasks.js (deleted)", "backend/routes/users.js (deleted)"
+          ],
+          "notes": [
+            "api/index.js was the live Vercel deploy entry point per Task 0.1 findings; deleting it is intentional per PHASE_0.md scope (full teardown before Phase 1 rebuilds the backend on Supabase), not an oversight.",
+            "backend/server.js now has dangling imports of the deleted backend/config/passport.js and backend/routes/*.js — left as-is per PHASE_0.md ('expect to gut its auth/db logic entirely in Phase 1'), not fixed in this task.",
+            "vercel.json still points its /api rewrite at the now-deleted api/index.js — deploy config was not updated in this task (out of Task 0.2 scope); flagged in cross_phase_notes for Phase 1."
+          ]
+        },
         "0.3": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
         "0.4": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] }
       },
@@ -50,7 +69,9 @@
     }
   },
 
-  "cross_phase_notes": [],
+  "cross_phase_notes": [
+    "vercel.json's /api rewrite still points at api/index.js, deleted in Phase 0 Task 0.2. Deploy config needs to be updated to point at the new backend once Phase 1/2 stand it up (or repointed to Render per CLAUDE.md's target stack, in which case vercel.json's rewrite may need to become a proxy to the Render URL instead)."
+  ],
 
   "open_questions_for_user": [],
 
