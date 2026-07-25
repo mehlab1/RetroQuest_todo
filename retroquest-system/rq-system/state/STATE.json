@@ -57,7 +57,18 @@
             "src/components/AudioControls.tsx superseded MusicToggle.tsx/SoundToggle.tsx (has its own handleMusicToggle handler, unrelated name collision, not an import) - confirmed by inspection in Task 0.1."
           ]
         },
-        "0.4": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] }
+        "0.4": {
+          "status": "done",
+          "gate_results": {
+            "scalability_structure": "PASS - full audit of every model in root prisma/schema.prisma against Task 0.2/0.3 deletions, recorded with one-line justification each in phases/PHASE_0_TASK_0.4_FINDINGS.md; `npx prisma validate` confirms schema still valid after the one removal"
+          },
+          "files_changed": ["prisma/schema.prisma (removed dead `model pokemon_gifs`)", "retroquest-system/rq-system/phases/PHASE_0_TASK_0.4_FINDINGS.md"],
+          "notes": [
+            "Discovered root prisma/schema.prisma and backend/prisma/schema.prisma are two divergent schema files (Type-4 clone) - NOT reconciled in this task, that's schema redesign out of Task 0.4 scope. Logged as known_deferred_item for Phase 1.",
+            "Removed root schema's `model pokemon_gifs` (lowercase, no @@map) - dead: only consumer api/index.js deleted in 0.2, zero surviving references, and backend/prisma/schema.prisma already has a correct working equivalent (`PokemonGif`) used by 4 surviving backend scripts. backend schema untouched.",
+            "Left User.password / User.googleId fields alone even though their only consumers (Passport strategies) are deleted - Phase 1 (Supabase Auth) will very likely redesign auth-related fields, and guessing at that now would violate Task 0.4's 'do not redesign' constraint. Logged as known_deferred_item."
+          ]
+        }
       },
       "definition_of_done_met": false
     },
@@ -91,5 +102,8 @@
 
   "open_questions_for_user": [],
 
-  "known_deferred_items": []
+  "known_deferred_items": [
+    "root prisma/schema.prisma and backend/prisma/schema.prisma have diverged (different naming conventions for CatchablePokemon/catchable_pokemon, PokemonPet field ordering, etc.) - Phase 1 must consolidate to a single canonical schema per CLAUDE.md #4 ('one Prisma client instance, imported everywhere'). See phases/PHASE_0_TASK_0.4_FINDINGS.md.",
+    "User.password and User.googleId fields exist only to support the deleted Passport local/Google OAuth strategies. Not removed in Phase 0 (would be guessing at Phase 1's design). Phase 1 (Supabase Auth) should decide whether/how these survive - Supabase typically manages its own auth.users table separately from an app profile table."
+  ]
 }
