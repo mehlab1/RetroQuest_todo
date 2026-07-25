@@ -127,11 +127,3 @@ model UserCaughtPokemon {
   @@unique([userId, catchablePokemonId])
   @@map("user_caught_pokemon")
 }
-
-model pokemon_gifs {
-  id         Int      @id @default(autoincrement())
-  pokemon_id Int      @unique
-  name       String
-  gif_data   String
-  created_at DateTime @default(now())
-}
