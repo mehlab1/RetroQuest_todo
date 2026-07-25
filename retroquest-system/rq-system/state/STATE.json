@@ -2,7 +2,7 @@
   "_comment": "Source of truth for what's done. Agent updates this per-task, not just at session end. Never hand-wave a status here — every 'done' must correspond to a gate result actually captured below.",
   "schema_version": 1,
   "project": "RetroQuest",
-  "active_phase": 0,
+  "active_phase": 1,
   "last_updated": "2026-07-25T00:00:00Z",
   "last_session_ended_cleanly": null,
 
