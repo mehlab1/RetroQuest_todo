@@ -9,7 +9,7 @@
   "phases": {
     "0": {
       "name": "Clear the ground",
-      "status": "in_progress",
+      "status": "done",
       "tasks": {
         "0.1": {
           "status": "done",
@@ -70,7 +70,7 @@
           ]
         }
       },
-      "definition_of_done_met": false
+      "definition_of_done_met": true
     },
     "1": {
       "name": "Foundation — Supabase + skeleton backend",
