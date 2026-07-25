@@ -40,7 +40,23 @@
             "vercel.json still points its /api rewrite at the now-deleted api/index.js — deploy config was not updated in this task (out of Task 0.2 scope); flagged in cross_phase_notes for Phase 1."
           ]
         },
-        "0.3": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] },
+        "0.3": {
+          "status": "done",
+          "gate_results": {
+            "scalability_structure": "PASS - re-grep for import statements (both `components/X` and relative `./X` forms) and *.test.*/*.spec.* references shows zero matches for all 5 deleted files; no Storybook config exists in repo",
+            "build_compile": "PASS - `npx vite build` succeeds cleanly (1554 modules, 6.8s); `npx tsc --noEmit` shows the same 26 pre-existing errors as on staging pre-deletion, minus 3 that belonged to the now-deleted PokemonSprite.tsx itself (net error count went down, zero new errors introduced) - verified via git stash diff against staging"
+          },
+          "files_changed": [
+            "src/components/ErrorBoundary.tsx (deleted)",
+            "src/components/Header.tsx (deleted)",
+            "src/components/MusicToggle.tsx (deleted)",
+            "src/components/SoundToggle.tsx (deleted)",
+            "src/components/PokemonSprite.tsx (deleted)"
+          ],
+          "notes": [
+            "src/components/AudioControls.tsx superseded MusicToggle.tsx/SoundToggle.tsx (has its own handleMusicToggle handler, unrelated name collision, not an import) - confirmed by inspection in Task 0.1."
+          ]
+        },
         "0.4": { "status": "pending", "gate_results": {}, "files_changed": [], "notes": [] }
       },
       "definition_of_done_met": false
